@@ -72,6 +72,36 @@ const uint8_t initialBoard[18][20] = {
 #undef N1
 #undef N2
 
+bool isTileConnection(uint8_t tile)
+{
+    switch(tile)
+    {
+        case 0:
+        case BOARD_TILE_NODE:
+        case BOARD_TILE_NODE_RIGHT:
+        case BOARD_TILE_NODE_LEFT:
+        case BOARD_TILE_NODE_BOTTOM:
+        case BOARD_TILE_NODE_TOP:
+            return false;
+        default: // must be connection
+            return true;
+    }
+}
+
+uint8_t invertDirection(uint8_t dir)
+{
+    uint8_t inverseDir = dir;
+    if (inverseDir & 0b1100)
+    {
+        inverseDir ^= 0b1100;
+    }
+    else //if (inverseMoveDirection & 0b0011)
+    {
+        inverseDir ^= 0b0011;
+    }
+    return inverseDir;
+}
+
 void drawInitialBoard()
 {
     for (uint8_t y = 0; y < 18; y++)
@@ -122,6 +152,50 @@ void drawOneTile(uint8_t x, uint8_t y)
         default: // must be connection
             vram_set(0x9800 + (y * 0x20) + x, TILE_CONNECT1 + (tile & 0xF));
             break;
+    }
+}
+
+// true = ends at node, false = ends with connection
+bool followPath(uint8_t startX, uint8_t startY, uint8_t startDir, bool deletePath)
+{
+    uint8_t curX = startX;
+    uint8_t curY = startY;
+    uint8_t curDir = startDir;
+    while(1)
+    {
+        //BGB_BREAKPOINT();
+        uint8_t curTile = board[curY][curX];
+        switch (curTile & 0xF) // ignore colour
+        {
+            case BOARD_TILE_NODE_RIGHT:
+            case BOARD_TILE_NODE_LEFT:
+            case BOARD_TILE_NODE_BOTTOM:
+            case BOARD_TILE_NODE_TOP:
+            case BOARD_TILE_NODE: // temp
+                return true;
+            case 0b1000: // end of connection
+            case 0b0100:
+            case 0b0010:
+            case 0b0001:
+                return false;
+            default: // must be a mid connection, time to follow it
+                if (deletePath)
+                {
+                    board[curY][curX] = BOARD_TILE_EMPTY;
+                    drawOneTile(curX, curY);
+                }
+                // remove the way we came from, to get a single direction
+                //curDir++; curDir--; BGB_BREAKPOINT();
+                curDir = ((curTile & 0xF) & (~invertDirection(curDir)));
+                switch (curDir)
+                {
+                    case 0b1000: curY--; break;
+                    case 0b0100: curY++; break;
+                    case 0b0010: curX--; break;
+                    case 0b0001: curX++; break;
+                    default: BGB_BREAKPOINT();
+                }
+        }
     }
 }
 
@@ -186,22 +260,53 @@ void main() {
             uint8_t prevBoardTile = board[cursorBoardPrevY][cursorBoardPrevX];
             if (prevBoardTile != BOARD_TILE_EMPTY) // must be node or connection if not empty
             {
+                uint8_t curBoardTile = board[cursorBoardY][cursorBoardX];
                 // checks are done - now it's time to paint the new connection
-                // paint new tile we just moved into
-                board[cursorBoardY][cursorBoardX] |= cursorMoveDirection;
-                drawOneTile(cursorBoardX, cursorBoardY);
-                // paint previous tile
-                uint8_t inverseMoveDirection = cursorMoveDirection;
-                if (inverseMoveDirection & 0b1100)
+                if (curBoardTile == BOARD_TILE_EMPTY)
                 {
-                    inverseMoveDirection ^= 0b1100;
+                    // paint new tile we just moved into
+                    board[cursorBoardY][cursorBoardX] |= cursorMoveDirection;
+                    drawOneTile(cursorBoardX, cursorBoardY);
+                    // paint previous tile
+                    board[cursorBoardPrevY][cursorBoardPrevX] |= invertDirection(cursorMoveDirection);
+                    drawOneTile(cursorBoardPrevX, cursorBoardPrevY);
                 }
-                else //if (inverseMoveDirection & 0b0011)
+                else
                 {
-                    inverseMoveDirection ^= 0b0011;
+                    for (uint8_t i = 0b1000; i != 0; i >>= 1)
+                    {
+                        if ((curBoardTile & i) != 0)
+                        {
+                            if (followPath(cursorBoardX, cursorBoardY, invertDirection(curBoardTile & i), false) == false)
+                            {
+                                followPath(cursorBoardX, cursorBoardY, invertDirection(curBoardTile & i), true);
+                                break;
+                            }
+                        }
+                    }
+                    // delete previous tile
+                    board[cursorBoardPrevY][cursorBoardPrevX] = BOARD_TILE_EMPTY;
+                    drawOneTile(cursorBoardPrevX, cursorBoardPrevY);
+                    // recalculate the direction the new tile connection should be
+                    board[cursorBoardY][cursorBoardX] &= 0xF0;
+                    if (isTileConnection(board[cursorBoardY+1][cursorBoardX]) && (board[cursorBoardY+1][cursorBoardX] & 0b1000)) // check lower tile
+                    {
+                        board[cursorBoardY][cursorBoardX] |= 0b0100;
+                    }
+                    else if (isTileConnection(board[cursorBoardY-1][cursorBoardX]) && (board[cursorBoardY-1][cursorBoardX] & 0b0100)) // check upper tile
+                    {
+                        board[cursorBoardY][cursorBoardX] |= 0b1000;
+                    }
+                    else if (isTileConnection(board[cursorBoardY][cursorBoardX-1]) && (board[cursorBoardY][cursorBoardX-1] & 0b0001)) // check left tile
+                    {
+                        board[cursorBoardY][cursorBoardX] |= 0b0010;
+                    }
+                    else if (isTileConnection(board[cursorBoardY][cursorBoardX+1]) && (board[cursorBoardY][cursorBoardX+1] & 0b0010)) // check right tile
+                    {
+                        board[cursorBoardY][cursorBoardX] |= 0b0001;
+                    }
+                    drawOneTile(cursorBoardX, cursorBoardY);
                 }
-                board[cursorBoardPrevY][cursorBoardPrevX] |= inverseMoveDirection;
-                drawOneTile(cursorBoardPrevX, cursorBoardPrevY);
             }
         }
 
