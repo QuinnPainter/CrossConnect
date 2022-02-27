@@ -26,15 +26,21 @@ enum tileTypes {
 ASSET(backgroundTiles, "background.2bpp");
 ASSET(cursorTiles, "cursor.2bpp");
 ASSET(nodeNumberTiles, "nodeNumbers.2bpp");
+ASSET(nodeShapeTiles, "nodeShapes.2bpp");
 ASSET(connectionTiles, "connections.2bpp");
 
 #define TILE_CURSOR1 0x00
 #define TILE_CURSOR2 0x01
-#define TILE_BGEMPTY 0x00
-#define TILE_BGFILLED 0x01
-#define TILE_NODE1 0x20
-#define TILE_CONNECT1 0x10
+#define TILE_BGEMPTY 0x80
+#define TILE_BGFILLED 0x81
+#define TILE_CONNECT1 0x90
+#define TILE_NUMNODE1 0xA0
+#define TILE_SHAPENODE1 0xB0
 
+#define STYLE_NUMS 0
+#define STYLE_SHAPES 1
+
+uint8_t nodeStyle = 1; // 0 = numbers, 1 = shapes
 uint8_t cursorBoardPrevX = 0; // Old cursor board position
 uint8_t cursorBoardPrevY = 0;
 uint8_t cursorBoardX = 1; // Current cursor board position
@@ -88,14 +94,15 @@ bool isTileConnection(uint8_t tile)
     }
 }
 
+// Inverts a direction, while maintaining the colour value.
 uint8_t invertDirection(uint8_t dir)
 {
     uint8_t inverseDir = dir;
-    if (inverseDir & 0b1100)
+    if (inverseDir & 0b1100) // invert up & down
     {
         inverseDir ^= 0b1100;
     }
-    else //if (inverseMoveDirection & 0b0011)
+    else if (inverseDir & 0b0011) // invert left & right
     {
         inverseDir ^= 0b0011;
     }
@@ -123,7 +130,14 @@ void drawInitialBoard()
             }
             else if (tileBottomBits == BOARD_TILE_NODE)
             {
-                vram_set(0x9800 + (y * 0x20) + x, TILE_NODE1 + (board[y][x] >> 4));
+                if (nodeStyle == STYLE_NUMS)
+                {
+                    vram_set(0x9800 + (y * 0x20) + x, TILE_NUMNODE1 + (board[y][x] >> 4));
+                }
+                else if (nodeStyle == STYLE_SHAPES)
+                {
+                    vram_set(0x9800 + (y * 0x20) + x, TILE_SHAPENODE1 + (board[y][x] >> 4));
+                }
             }
             else // Since we're just drawing the initial board state, it should be impossible for there to be connections.
             {
@@ -142,7 +156,14 @@ void drawOneTile(uint8_t x, uint8_t y)
             vram_set(0x9800 + (y * 0x20) + x, TILE_BGEMPTY);
             break;
         case BOARD_TILE_NODE:
-            vram_set(0x9800 + (y * 0x20) + x, TILE_NODE1 + (tile >> 4));
+            if (nodeStyle == STYLE_NUMS)
+            {
+                vram_set(0x9800 + (y * 0x20) + x, TILE_NUMNODE1 + (tile >> 4));
+            }
+            else if (nodeStyle == STYLE_SHAPES)
+            {
+                vram_set(0x9800 + (y * 0x20) + x, TILE_SHAPENODE1 + (tile >> 4));
+            }
             break;
         case BOARD_TILE_NODE_RIGHT:
         case BOARD_TILE_NODE_LEFT:
@@ -203,9 +224,39 @@ void main() {
     lcd_off(); // Disable screen so we can copy to VRAM freely
 
     memcpy((void*)0x8000, cursorTiles, cursorTiles_end - cursorTiles);
-    memcpy((void*)0x9000, backgroundTiles, backgroundTiles_end - backgroundTiles);
-    memcpy((void*)0x9100, connectionTiles, connectionTiles_end - connectionTiles);
-    memcpy((void*)0x9200, nodeNumberTiles, nodeNumberTiles_end - nodeNumberTiles);
+    memcpy((void*)0x8800, backgroundTiles, backgroundTiles_end - backgroundTiles);
+    memcpy((void*)0x8900, connectionTiles, connectionTiles_end - connectionTiles);
+    memcpy((void*)0x8A00, nodeNumberTiles, nodeNumberTiles_end - nodeNumberTiles);
+    memcpy((void*)0x8B00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // unconnected
+    memcpy((void*)0x8C00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // top
+    memcpy((void*)0x8D00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // bottom
+    memcpy((void*)0x8E00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // left
+    memcpy((void*)0x8F00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // right
+    // Generate the "connected" tiles for nodeShapes
+    for (uint8_t* i = (uint8_t*)0x8C00; i < (uint8_t*)0x8D00; i += 16) // top
+    {
+        (*i) |= 0b00011000;
+        (*(i + 1)) |= 0b00011000;
+    }
+    for (uint8_t* i = (uint8_t*)0x8D0E; i < (uint8_t*)0x8E0E; i += 16) // bottom
+    {
+        (*i) |= 0b00011000;
+        (*(i + 1)) |= 0b00011000;
+    }
+    for (uint8_t* i = (uint8_t*)0x8E06; i < (uint8_t*)0x8F06; i += 16) // left
+    {
+        (*i) |= 0b10000000;
+        (*(i + 1)) |= 0b10000000;
+        (*(i + 2)) |= 0b10000000;
+        (*(i + 3)) |= 0b10000000;
+    }
+    for (uint8_t* i = (uint8_t*)0x8F06; i < (uint8_t*)0x9006; i += 16) // right
+    {
+        (*i) |= 0b00000001;
+        (*(i + 1)) |= 0b00000001;
+        (*(i + 2)) |= 0b00000001;
+        (*(i + 3)) |= 0b00000001;
+    }
     //Setup the OAM for sprite drawing
     oam_init();
 
