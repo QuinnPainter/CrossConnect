@@ -80,7 +80,7 @@ const uint8_t initialBoard[18][20] = {
 
 bool isTileConnection(uint8_t tile)
 {
-    switch(tile)
+    switch(tile & 0x0F)
     {
         case 0:
         case BOARD_TILE_NODE:
@@ -228,12 +228,53 @@ bool followPath(uint8_t startX, uint8_t startY, uint8_t startDir, bool deletePat
     }
 }
 
-inline bool isMoveValid(uint8_t prevX, uint8_t prevY, uint8_t x, uint8_t y)
+inline bool isMoveValid(uint8_t prevTile, uint8_t curTile)
 {
-    uint8_t prevTile = board[prevY][prevX];
-    uint8_t curTile = board[y][x];
+    // prevTile has already been confirmed to be not empty, and it can't be a wall,
+    // so it must be a node or connection
+
+    switch (prevTile & 0x0F)
+    {
+        case BOARD_TILE_NODE_RIGHT: // If prev tile is connected node
+        case BOARD_TILE_NODE_LEFT:  // or a connection already connected in 2 directions
+        case BOARD_TILE_NODE_BOTTOM:// move is not valid.
+        case BOARD_TILE_NODE_TOP:
+        case 0b1100:
+        case 0b0011:
+        case 0b1001:
+        case 0b1010:
+        case 0b0101:
+        case 0b0110:
+            return false;
+    }
+
+    switch (curTile & 0x0F)
+    {
+        case 0: // Moves into empty tiles are always valid
+            return true;
+        case 0b0001:
+        case 0b0010:
+        case 0b0100: // Moves into single connections or unconnected nodes
+        case 0b1000: // are only valid if the colours match
+        case BOARD_TILE_NODE:
+            if ((curTile & 0xF0) == (prevTile & 0xF0)) { return true; }
+    }
+    // new tile must be a connected node or a 2-connected connection
+    return false;
+}
 
 
+void paintConnection(uint8_t x, uint8_t y, uint8_t direction)
+{
+    if ((board[y][x] & 0x0F) == BOARD_TILE_NODE)
+    {
+        board[y][x] &= (direction ^ 0xFF);
+    }
+    else
+    {
+        board[y][x] |= direction;
+    }
+    drawOneTile(x, y);
 }
 
 void main() {
@@ -328,15 +369,16 @@ void main() {
             if (prevBoardTile != BOARD_TILE_EMPTY) // must be node or connection if not empty
             {
                 uint8_t curBoardTile = board[cursorBoardY][cursorBoardX];
-                // checks are done - now it's time to paint the new connection
-                if (curBoardTile == BOARD_TILE_EMPTY)
+                if (isMoveValid(prevBoardTile, curBoardTile))
                 {
                     // paint new tile we just moved into
-                    board[cursorBoardY][cursorBoardX] |= cursorMoveDirection;
-                    drawOneTile(cursorBoardX, cursorBoardY);
+                    paintConnection(cursorBoardX, cursorBoardY, cursorMoveDirection);
                     // paint previous tile
-                    board[cursorBoardPrevY][cursorBoardPrevX] |= invertDirection(cursorMoveDirection);
-                    drawOneTile(cursorBoardPrevX, cursorBoardPrevY);
+                    paintConnection(cursorBoardPrevX, cursorBoardPrevY, invertDirection(cursorMoveDirection));
+                    // set colour of new tile to be the same as colour of previous tile
+                    board[cursorBoardY][cursorBoardX] =
+                            (board[cursorBoardY][cursorBoardX] & 0x0F)
+                            | (board[cursorBoardPrevY][cursorBoardPrevX] & 0xF0);
                 }
                 /*else
                 {
