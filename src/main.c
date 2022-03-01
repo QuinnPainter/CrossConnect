@@ -150,26 +150,34 @@ void drawInitialBoard()
 void drawOneTile(uint8_t x, uint8_t y)
 {
     uint8_t tile = board[y][x];
+    uint8_t nodeOffset;
     switch (tile & 0x0F)
     {
         case 0: // Can't be wall, so must be empty
             vram_set(0x9800 + (y * 0x20) + x, TILE_BGEMPTY);
             break;
+        case BOARD_TILE_NODE_RIGHT:
+            nodeOffset = 0x40;
+            goto NODE_WITH_OFFSET;
+        case BOARD_TILE_NODE_LEFT:
+            nodeOffset = 0x30;
+            goto NODE_WITH_OFFSET;
+        case BOARD_TILE_NODE_BOTTOM:
+            nodeOffset = 0x20;
+            goto NODE_WITH_OFFSET;
+        case BOARD_TILE_NODE_TOP:
+            nodeOffset = 0x10;
+            goto NODE_WITH_OFFSET;
         case BOARD_TILE_NODE:
             if (nodeStyle == STYLE_NUMS)
             {
                 vram_set(0x9800 + (y * 0x20) + x, TILE_NUMNODE1 + (tile >> 4));
+                break;
             }
-            else if (nodeStyle == STYLE_SHAPES)
-            {
-                vram_set(0x9800 + (y * 0x20) + x, TILE_SHAPENODE1 + (tile >> 4));
-            }
+            nodeOffset = 0;
+        NODE_WITH_OFFSET:
+            vram_set(0x9800 + (y * 0x20) + x, TILE_SHAPENODE1 + (tile >> 4) + nodeOffset);
             break;
-        case BOARD_TILE_NODE_RIGHT:
-        case BOARD_TILE_NODE_LEFT:
-        case BOARD_TILE_NODE_BOTTOM:
-        case BOARD_TILE_NODE_TOP:
-            break; // todo
         default: // must be connection
             vram_set(0x9800 + (y * 0x20) + x, TILE_CONNECT1 + (tile & 0xF));
             break;
@@ -218,6 +226,14 @@ bool followPath(uint8_t startX, uint8_t startY, uint8_t startDir, bool deletePat
                 }
         }
     }
+}
+
+inline bool isMoveValid(uint8_t prevX, uint8_t prevY, uint8_t x, uint8_t y)
+{
+    uint8_t prevTile = board[prevY][prevX];
+    uint8_t curTile = board[y][x];
+
+
 }
 
 void main() {
@@ -322,7 +338,7 @@ void main() {
                     board[cursorBoardPrevY][cursorBoardPrevX] |= invertDirection(cursorMoveDirection);
                     drawOneTile(cursorBoardPrevX, cursorBoardPrevY);
                 }
-                else
+                /*else
                 {
                     for (uint8_t i = 0b1000; i != 0; i >>= 1)
                     {
@@ -357,8 +373,17 @@ void main() {
                         board[cursorBoardY][cursorBoardX] |= 0b0001;
                     }
                     drawOneTile(cursorBoardX, cursorBoardY);
-                }
+                }*/
             }
+        }
+        else if ((joypad_state & PAD_B) && isTileConnection(board[cursorBoardY][cursorBoardX]))
+        {
+            // Turn connected tiles into a "stub"
+            if (isTileConnection(board[cursorBoardY+1][cursorBoardX])) {  }
+
+            // Erase tile
+            board[cursorBoardY][cursorBoardX] = BOARD_TILE_EMPTY;
+            drawOneTile(cursorBoardX, cursorBoardY);
         }
 
         // Screen to OAM coordinates
