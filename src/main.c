@@ -21,6 +21,10 @@ enum tileTypes {
     // 0100 = Bottom
     // 0010 = Left
     // 0001 = Right
+    DIR_UP = 0b1000,
+    DIR_DOWN = 0b0100,
+    DIR_LEFT = 0b0010,
+    DIR_RIGHT = 0b0001,
 };
 
 ASSET(backgroundTiles, "background.2bpp");
@@ -45,7 +49,7 @@ uint8_t cursorBoardPrevX = 0; // Old cursor board position
 uint8_t cursorBoardPrevY = 0;
 uint8_t cursorBoardX = 1; // Current cursor board position
 uint8_t cursorBoardY = 1;
-uint8_t cursorMoveDirection = false; // Which direction the cursor moved. If 0, did not move.
+uint8_t cursorMoveDirection = 0; // Which direction the cursor moved. If 0, did not move.
 
 uint8_t board[18][20];
 
@@ -77,22 +81,6 @@ const uint8_t initialBoard[18][20] = {
 #undef F
 #undef N1
 #undef N2
-
-bool isTileConnection(uint8_t tile)
-{
-    switch(tile & 0x0F)
-    {
-        case 0:
-        case BOARD_TILE_NODE:
-        case BOARD_TILE_NODE_RIGHT:
-        case BOARD_TILE_NODE_LEFT:
-        case BOARD_TILE_NODE_BOTTOM:
-        case BOARD_TILE_NODE_TOP:
-            return false;
-        default: // must be connection
-            return true;
-    }
-}
 
 // Inverts a direction, while maintaining the colour value.
 uint8_t invertDirection(uint8_t dir)
@@ -153,8 +141,15 @@ void drawOneTile(uint8_t x, uint8_t y)
     uint8_t nodeOffset;
     switch (tile & 0x0F)
     {
-        case 0: // Can't be wall, so must be empty
-            vram_set(0x9800 + (y * 0x20) + x, TILE_BGEMPTY);
+        case 0:
+            if (tile == BOARD_TILE_FILLED)
+            {
+                vram_set(0x9800 + (y * 0x20) + x, TILE_BGFILLED);
+            }
+            else
+            {
+                vram_set(0x9800 + (y * 0x20) + x, TILE_BGEMPTY);
+            }
             break;
         case BOARD_TILE_NODE_RIGHT:
             nodeOffset = 0x40;
@@ -218,10 +213,10 @@ bool followPath(uint8_t startX, uint8_t startY, uint8_t startDir, bool deletePat
                 curDir = ((curTile & 0xF) & (~invertDirection(curDir)));
                 switch (curDir)
                 {
-                    case 0b1000: curY--; break;
-                    case 0b0100: curY++; break;
-                    case 0b0010: curX--; break;
-                    case 0b0001: curX++; break;
+                    case DIR_UP: curY--; break;
+                    case DIR_DOWN: curY++; break;
+                    case DIR_LEFT: curX--; break;
+                    case DIR_RIGHT: curX++; break;
                     default: BGB_BREAKPOINT();
                 }
         }
@@ -263,7 +258,6 @@ inline bool isMoveValid(uint8_t prevTile, uint8_t curTile)
     return false;
 }
 
-
 void paintConnection(uint8_t x, uint8_t y, uint8_t direction)
 {
     if ((board[y][x] & 0x0F) == BOARD_TILE_NODE)
@@ -273,6 +267,50 @@ void paintConnection(uint8_t x, uint8_t y, uint8_t direction)
     else
     {
         board[y][x] |= direction;
+    }
+    drawOneTile(x, y);
+}
+
+// Erase a single direction connection on a given tile
+void eraseConnection(uint8_t x, uint8_t y, uint8_t direction)
+{
+    switch (board[y][x] & 0x0F)
+    {
+        case BOARD_TILE_NODE_RIGHT:
+        case BOARD_TILE_NODE_LEFT:
+        case BOARD_TILE_NODE_BOTTOM:
+        case BOARD_TILE_NODE_TOP:
+            // If direction matches the node direction, it will become an unconnected node
+            // otherwise, nothing will change
+            board[y][x] |= direction;
+        case BOARD_TILE_NODE: // do nothing
+            break;
+        default: // must be connection (or empty / wall)
+            board[y][x] &= ~direction;
+    }
+    // If all connections were removed, we must also remove colour
+    // so the tile ends up as empty instead of a wall
+    if ((board[y][x] & 0x0F) == 0)
+    {
+        board[y][x] = BOARD_TILE_EMPTY;
+    }
+    drawOneTile(x, y);
+}
+
+// Erase all connections for a given tile
+inline void eraseTileConnections(uint8_t x, uint8_t y)
+{
+    switch (board[y][x] & 0x0F)
+    {
+        case BOARD_TILE_NODE_RIGHT:
+        case BOARD_TILE_NODE_LEFT:
+        case BOARD_TILE_NODE_BOTTOM:
+        case BOARD_TILE_NODE_TOP:
+            board[y][x] |= 0x0F;
+        case BOARD_TILE_NODE:
+            break;
+        default: // must be connection (or empty)
+            board[y][x] = BOARD_TILE_EMPTY;
     }
     drawOneTile(x, y);
 }
@@ -351,11 +389,11 @@ void main() {
         cursorBoardPrevX = cursorBoardX;
         cursorBoardPrevY = cursorBoardY;
         cursorMoveDirection = 0;
-        if (joypad_pressed & PAD_LEFT) { cursorBoardX --; cursorMoveDirection = 0b0001; }
-        if (joypad_pressed & PAD_RIGHT) { cursorBoardX ++; cursorMoveDirection = 0b0010; }
+        if (joypad_pressed & PAD_LEFT) { cursorBoardX --; cursorMoveDirection = DIR_RIGHT; }
+        if (joypad_pressed & PAD_RIGHT) { cursorBoardX ++; cursorMoveDirection = DIR_LEFT; }
         // Don't allow moving diagonal in a single frame, so connection painting doesn't get messed up
-        if (joypad_pressed & PAD_UP && cursorMoveDirection == 0) { cursorBoardY --; cursorMoveDirection = 0b0100; }
-        if (joypad_pressed & PAD_DOWN && cursorMoveDirection == 0) { cursorBoardY ++; cursorMoveDirection = 0b1000; }
+        if (joypad_pressed & PAD_UP && cursorMoveDirection == 0) { cursorBoardY --; cursorMoveDirection = DIR_DOWN; }
+        if (joypad_pressed & PAD_DOWN && cursorMoveDirection == 0) { cursorBoardY ++; cursorMoveDirection = DIR_UP; }
         if (board[cursorBoardY][cursorBoardX] == BOARD_TILE_FILLED)
         {
             // Can't move into filled space, so move back to previous position
@@ -418,14 +456,16 @@ void main() {
                 }*/
             }
         }
-        else if ((joypad_state & PAD_B) && isTileConnection(board[cursorBoardY][cursorBoardX]))
+        else if (joypad_state & PAD_B) // B held = Erase connections
         {
-            // Turn connected tiles into a "stub"
-            if (isTileConnection(board[cursorBoardY+1][cursorBoardX])) {  }
+            // Erase the connections coming from the 4 bordering tiles
+            eraseConnection(cursorBoardX+1, cursorBoardY, DIR_LEFT);
+            eraseConnection(cursorBoardX-1, cursorBoardY, DIR_RIGHT);
+            eraseConnection(cursorBoardX, cursorBoardY+1, DIR_UP);
+            eraseConnection(cursorBoardX, cursorBoardY-1, DIR_DOWN);
 
-            // Erase tile
-            board[cursorBoardY][cursorBoardX] = BOARD_TILE_EMPTY;
-            drawOneTile(cursorBoardX, cursorBoardY);
+            // Erase the current tile
+            eraseTileConnections(cursorBoardX, cursorBoardY);
         }
 
         // Screen to OAM coordinates
