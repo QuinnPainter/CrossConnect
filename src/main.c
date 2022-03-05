@@ -194,8 +194,9 @@ bool followPath(uint8_t startX, uint8_t startY, bool deletePath)
             case BOARD_TILE_NODE_LEFT:
             case BOARD_TILE_NODE_BOTTOM:
             case BOARD_TILE_NODE_TOP:
-            case BOARD_TILE_NODE: // temp
                 return true;
+            case BOARD_TILE_NODE: // should be impossible
+                BGB_BREAKPOINT();
             case 0b1000: // end of connection
             case 0b0100:
             case 0b0010:
@@ -262,6 +263,18 @@ inline bool isMoveValid(uint8_t prevTile, uint8_t curTile)
     }
     // new tile must be a connected node or a 2-connected connection
     return false;
+}
+
+inline bool checkGameWon()
+{
+    for (uint8_t* boardPtr = (uint8_t*)board; boardPtr < (uint8_t*)board + sizeof(board); boardPtr++)
+    {
+        if (((*boardPtr) & 0x0F) == BOARD_TILE_NODE || (*boardPtr) == BOARD_TILE_EMPTY)
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 void paintConnection(uint8_t x, uint8_t y, uint8_t direction)
@@ -398,6 +411,16 @@ void main() {
 
     drawInitialBoard();
 
+    // Put the cursor in the top-leftmost open space
+    for (cursorBoardY = 1;; cursorBoardY++)
+    {
+        for (cursorBoardX = 1; cursorBoardX < sizeof(board[0]); cursorBoardX++)
+        {
+            if (board[cursorBoardY][cursorBoardX] != BOARD_TILE_FILLED) { goto DONE_PLACE_CURSOR; }
+        }
+    }
+    DONE_PLACE_CURSOR:
+
     while(1) {
         joypad_update();
 
@@ -433,6 +456,12 @@ void main() {
                     board[cursorBoardY][cursorBoardX] =
                             (board[cursorBoardY][cursorBoardX] & 0x0F)
                             | (board[cursorBoardPrevY][cursorBoardPrevX] & 0xF0);
+                }
+
+                if (checkGameWon())
+                {
+                    //todo: game winning
+                    BGB_BREAKPOINT();
                 }
             }
         }
