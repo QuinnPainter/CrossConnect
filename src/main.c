@@ -180,14 +180,13 @@ void drawOneTile(uint8_t x, uint8_t y)
 }
 
 // true = ends at node, false = ends with connection
-bool followPath(uint8_t startX, uint8_t startY, uint8_t startDir, bool deletePath)
+bool followPath(uint8_t startX, uint8_t startY, bool deletePath)
 {
     uint8_t curX = startX;
     uint8_t curY = startY;
-    uint8_t curDir = startDir;
+    uint8_t curDir = 0;
     while(1)
     {
-        //BGB_BREAKPOINT();
         uint8_t curTile = board[curY][curX];
         switch (curTile & 0xF) // ignore colour
         {
@@ -201,7 +200,15 @@ bool followPath(uint8_t startX, uint8_t startY, uint8_t startDir, bool deletePat
             case 0b0100:
             case 0b0010:
             case 0b0001:
-                return false;
+                if (curX != startX || curY != startY) // make sure we're not actually at the start of the connection
+                {
+                    if (deletePath)
+                    {
+                        board[curY][curX] = BOARD_TILE_EMPTY;
+                        drawOneTile(curX, curY);
+                    }
+                    return false;
+                }
             default: // must be a mid connection, time to follow it
                 if (deletePath)
                 {
@@ -209,7 +216,6 @@ bool followPath(uint8_t startX, uint8_t startY, uint8_t startDir, bool deletePat
                     drawOneTile(curX, curY);
                 }
                 // remove the way we came from, to get a single direction
-                //curDir++; curDir--; BGB_BREAKPOINT();
                 curDir = ((curTile & 0xF) & (~invertDirection(curDir)));
                 switch (curDir)
                 {
@@ -286,13 +292,23 @@ void eraseConnection(uint8_t x, uint8_t y, uint8_t direction)
         case BOARD_TILE_NODE: // do nothing
             break;
         default: // must be connection (or empty / wall)
-            board[y][x] &= ~direction;
-    }
-    // If all connections were removed, we must also remove colour
-    // so the tile ends up as empty instead of a wall
-    if ((board[y][x] & 0x0F) == 0)
-    {
-        board[y][x] = BOARD_TILE_EMPTY;
+            if (board[y][x] & direction) // check if it's connected in that direction
+            {
+                board[y][x] &= ~direction;
+                if ((board[y][x] & 0x0F) != 0)
+                {
+                    if (followPath(x, y, false) == false)
+                    {
+                        followPath(x, y, true);
+                    }
+                }
+                else
+                {
+                    // If the last connection was removed, we must also remove colour
+                    // so the tile ends up as empty instead of a wall
+                    board[y][x] = BOARD_TILE_EMPTY;
+                }
+            }
     }
     drawOneTile(x, y);
 }
@@ -418,42 +434,6 @@ void main() {
                             (board[cursorBoardY][cursorBoardX] & 0x0F)
                             | (board[cursorBoardPrevY][cursorBoardPrevX] & 0xF0);
                 }
-                /*else
-                {
-                    for (uint8_t i = 0b1000; i != 0; i >>= 1)
-                    {
-                        if ((curBoardTile & i) != 0)
-                        {
-                            if (followPath(cursorBoardX, cursorBoardY, invertDirection(curBoardTile & i), false) == false)
-                            {
-                                followPath(cursorBoardX, cursorBoardY, invertDirection(curBoardTile & i), true);
-                                break;
-                            }
-                        }
-                    }
-                    // delete previous tile
-                    board[cursorBoardPrevY][cursorBoardPrevX] = BOARD_TILE_EMPTY;
-                    drawOneTile(cursorBoardPrevX, cursorBoardPrevY);
-                    // recalculate the direction the new tile connection should be
-                    board[cursorBoardY][cursorBoardX] &= 0xF0;
-                    if (isTileConnection(board[cursorBoardY+1][cursorBoardX]) && (board[cursorBoardY+1][cursorBoardX] & 0b1000)) // check lower tile
-                    {
-                        board[cursorBoardY][cursorBoardX] |= 0b0100;
-                    }
-                    else if (isTileConnection(board[cursorBoardY-1][cursorBoardX]) && (board[cursorBoardY-1][cursorBoardX] & 0b0100)) // check upper tile
-                    {
-                        board[cursorBoardY][cursorBoardX] |= 0b1000;
-                    }
-                    else if (isTileConnection(board[cursorBoardY][cursorBoardX-1]) && (board[cursorBoardY][cursorBoardX-1] & 0b0001)) // check left tile
-                    {
-                        board[cursorBoardY][cursorBoardX] |= 0b0010;
-                    }
-                    else if (isTileConnection(board[cursorBoardY][cursorBoardX+1]) && (board[cursorBoardY][cursorBoardX+1] & 0b0010)) // check right tile
-                    {
-                        board[cursorBoardY][cursorBoardX] |= 0b0001;
-                    }
-                    drawOneTile(cursorBoardX, cursorBoardY);
-                }*/
             }
         }
         else if (joypad_state & PAD_B) // B held = Erase connections
