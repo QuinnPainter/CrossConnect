@@ -421,7 +421,8 @@ void main() {
     }
     DONE_PLACE_CURSOR:
 
-    while(1) {
+    while(1)
+    {
         joypad_update();
 
         // Update cursor position
@@ -431,8 +432,8 @@ void main() {
         if (joypad_pressed & PAD_LEFT) { cursorBoardX --; cursorMoveDirection = DIR_RIGHT; }
         if (joypad_pressed & PAD_RIGHT) { cursorBoardX ++; cursorMoveDirection = DIR_LEFT; }
         // Don't allow moving diagonal in a single frame, so connection painting doesn't get messed up
-        if (joypad_pressed & PAD_UP && cursorMoveDirection == 0) { cursorBoardY --; cursorMoveDirection = DIR_DOWN; }
-        if (joypad_pressed & PAD_DOWN && cursorMoveDirection == 0) { cursorBoardY ++; cursorMoveDirection = DIR_UP; }
+        if ((joypad_pressed & PAD_UP) && cursorMoveDirection == 0) { cursorBoardY --; cursorMoveDirection = DIR_DOWN; }
+        if ((joypad_pressed & PAD_DOWN) && cursorMoveDirection == 0) { cursorBoardY ++; cursorMoveDirection = DIR_UP; }
         if (board[cursorBoardY][cursorBoardX] == BOARD_TILE_FILLED)
         {
             // Can't move into filled space, so move back to previous position
