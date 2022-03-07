@@ -1,0 +1,3 @@
+[submodule "levelgen/numberlink"]
+	path = levelgen/numberlink
+	url = https://github.com/thomasahle/numberlink.git
