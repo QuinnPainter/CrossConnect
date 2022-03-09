@@ -39,8 +39,30 @@ _loadLevel::
     and $0F
     ld [_curLevelHeight], a
 
-    ld b, h ; move puzzle definition pointer into BC
-    ld c, l
+    push hl ; save puzzle definition pointer for later
+
+    ; Clear empty area of the board based on the puzzle's dimensions
+    ld hl, _board + 18 + 1
+    ld c, a ; C = curLevelHeight
+    ld a, [_curLevelWidth]
+    ld b, a
+    ld a, 18
+    sub b
+    ld e, a
+    ld d, 0 ; DE = 18 - width
+.clearHeightLoop:
+    ld a, [_curLevelWidth]
+    ld b, a
+    xor a
+.clearWidthLoop:
+    ld [hli], a
+    dec b
+    jr nz, .clearWidthLoop
+    add hl, de
+    dec c
+    jr nz, .clearHeightLoop
+
+    pop bc ; move puzzle definition pointer into BC
 .drawNodesLoop:
     ld hl, _board + 18 + 1 ; HL = board[1][1]
     ld a, [bc]
