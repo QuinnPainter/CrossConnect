@@ -4,8 +4,8 @@
 #include "sdk/assets.h"
 #include "sdk/joypad.h"
 #include "sdk/interrupt.h"
-#include <string.h>
 #include "helpers.h"
+#include "levelmngr.h"
 
 enum tileTypes {
     BOARD_TILE_EMPTY = 0b00000000,
@@ -32,6 +32,7 @@ ASSET(cursorTiles, "cursor.2bpp");
 ASSET(nodeNumberTiles, "nodeNumbers.2bpp");
 ASSET(nodeShapeTiles, "nodeShapes.2bpp");
 ASSET(connectionTiles, "connections.2bpp");
+LEVELPACK(testLevels, "testlevels.bin");
 
 #define TILE_CURSOR1 0x00
 #define TILE_CURSOR2 0x01
@@ -408,6 +409,9 @@ void main() {
 
     //memset(board, 0, sizeof(board));
     memcpy(board, initialBoard, sizeof(board));
+
+    curLevelPackAddr = testLevels;
+    loadLevel(2);
 
     drawInitialBoard();
 
