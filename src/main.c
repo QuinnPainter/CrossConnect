@@ -52,31 +52,31 @@ uint8_t cursorBoardX = 1; // Current cursor board position
 uint8_t cursorBoardY = 1;
 uint8_t cursorMoveDirection = 0; // Which direction the cursor moved. If 0, did not move.
 
-uint8_t board[18][20];
+uint8_t board[18][18];
 
 #define F BOARD_TILE_FILLED
 #define E BOARD_TILE_EMPTY
 #define N1 (0b00000000 + BOARD_TILE_NODE)
 #define N2 (0b00010000 + BOARD_TILE_NODE)
-const uint8_t initialBoard[18][20] = {
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, F},
-    {F, N1, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, F, F, E, E, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, F, F, E, E, E, E, E, N2, E, E, E, F},
-    {F, E, E, E, E, E, E, E, E, F, E, E, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, E, E, E, N2, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, N1, E, E, E, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, F},
-    {F, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F}
+const uint8_t initialBoard[18][18] = {
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, N1, E, E, E, E, E, E, N1, N2, E, E, E, E, E, E, N2, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
+    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F}
 };
 #undef E
 #undef F
@@ -102,7 +102,7 @@ void drawInitialBoard()
 {
     for (uint8_t y = 0; y < 18; y++)
     {
-        for (uint8_t x = 0; x < 20; x++)
+        for (uint8_t x = 0; x < 18; x++)
         {
             uint8_t tileBottomBits = board[y][x] & 0x0F;
             uint8_t tileTopBits = board[y][x] & 0xF0;
@@ -407,9 +407,9 @@ void main() {
     // Init joypad state
     joypad_state = 0;
 
-    //memset(board, 0, sizeof(board));
-    memcpy(board, initialBoard, sizeof(board));
+    //memcpy(board, initialBoard, sizeof(board));
 
+    memset(board, BOARD_TILE_FILLED, sizeof(board));
     curLevelPackAddr = testLevels;
     loadLevel(2);
 

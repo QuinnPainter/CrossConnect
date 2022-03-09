@@ -39,7 +39,7 @@ def genPack(width, height, numLevels, name):
             #print("node " + str(curNodeNum) + "  x: " + str(node1Pos % width) + "  y: " + str(math.floor(node1Pos / width)))
             #print("node " + str(curNodeNum) + "  x: " + str(node2Pos % width) + "  y: " + str(math.floor(node2Pos / width)))
             curNodeNum += 1
-        outPuz[0] = curNodeNum - 1
+        outPuz[0] = (curNodeNum - 1) * 2
         outPuzArray += outPuz
         #print (outPuz.hex())
     with open("levels/" + name + ".bin", "wb") as f:
