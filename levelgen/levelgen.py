@@ -1,6 +1,13 @@
 import subprocess
 import math
 
+# Level Format:
+# Levels are saved in packs, accessed using a pointer to the beginning of the pack and the level index.
+# Byte 1: Number of nodes in the level
+# Byte 2: High 4 bits = level width, low 4 bits = level height
+# Following bytes: Each byte describes a node.
+# High 4 bits = Node X, low 4 bits = Node Y
+
 def genPack(width, height, numLevels, name):
     outPuzArray = bytearray(0)
 
