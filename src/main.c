@@ -54,7 +54,7 @@ uint8_t cursorMoveDirection = 0; // Which direction the cursor moved. If 0, did 
 
 uint8_t board[18][18];
 
-#define F BOARD_TILE_FILLED
+/*#define F BOARD_TILE_FILLED
 #define E BOARD_TILE_EMPTY
 #define N1 (0b00000000 + BOARD_TILE_NODE)
 #define N2 (0b00010000 + BOARD_TILE_NODE)
@@ -81,7 +81,7 @@ const uint8_t initialBoard[18][18] = {
 #undef E
 #undef F
 #undef N1
-#undef N2
+#undef N2*/
 
 // Inverts a direction, while maintaining the colour value.
 uint8_t invertDirection(uint8_t dir)

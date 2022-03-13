@@ -9,7 +9,6 @@ _curNodeIndex: ds 1 ; temp value used to store the current node colour
 SECTION "level_mngr_functions", ROM0
 
 _loadLevel::
-    ld b, b
     ld hl, sp+2
     ld b, [hl] ; Load level index into B
     ld hl, _curLevelPackAddr ; Load level pack start address into HL

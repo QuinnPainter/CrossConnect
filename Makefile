@@ -3,6 +3,6 @@ PROJECT_NAME := CrossConnect
 # Run "rgbfix --mbc-type help" for possible MBC types
 MBC     := ROM
 # Target should be a combination of DMG, CGB and SGB
-TARGETS := DMG
+TARGETS := DMG CGB
 
 include gbsdk/rules.mk
