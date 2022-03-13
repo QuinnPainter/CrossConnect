@@ -8,6 +8,13 @@ import math
 # Following bytes: Each byte describes a node.
 # High 4 bits = Node X, low 4 bits = Node Y
 
+# since the nodes in numberlink start at 1, we can't directly convert to hex
+def convertNodeNum(num):
+    if (num == 'g'):
+        return 16
+    else:
+        return int(num, 16) - 1
+
 def genPack(width, height, numLevels, name):
     outPuzArray = bytearray(0)
 
@@ -23,7 +30,7 @@ def genPack(width, height, numLevels, name):
         startPuz = startPuz.decode('utf-8').replace("\n", "")
 
         outPuz.append(0) # placeholder for node count
-        outPuz.append((width << 4) | height)
+        outPuz.append(((width - 1) << 4) | height - 1)
 
         curNodeNum = 1
         while (True):
@@ -31,7 +38,7 @@ def genPack(width, height, numLevels, name):
             node1Pos = None
             node2Pos = None
             for c in startPuz:
-                if c != '.' and int(c, 16) == curNodeNum:
+                if c != '.' and convertNodeNum(c) == curNodeNum:
                     if node1Pos == None:
                         node1Pos = curPos
                     else:

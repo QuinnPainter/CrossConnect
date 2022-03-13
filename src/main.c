@@ -45,12 +45,16 @@ LEVELPACK(testLevels, "testlevels.bin");
 #define STYLE_NUMS 0
 #define STYLE_SHAPES 1
 
+#define BOARD_VRAM 0x99CD
+
 uint8_t nodeStyle = 1; // 0 = numbers, 1 = shapes
 uint8_t cursorBoardPrevX = 0; // Old cursor board position
 uint8_t cursorBoardPrevY = 0;
 uint8_t cursorBoardX = 1; // Current cursor board position
 uint8_t cursorBoardY = 1;
 uint8_t cursorMoveDirection = 0; // Which direction the cursor moved. If 0, did not move.
+uint8_t cursorXOffset;
+uint8_t cursorYOffset;
 
 uint8_t board[18][18];
 
@@ -110,22 +114,22 @@ void drawInitialBoard()
             {
                 if (tileTopBits == (BOARD_TILE_EMPTY & 0xF0))
                 {
-                    vram_set(0x9800 + (y * 0x20) + x, TILE_BGEMPTY);
+                    vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_BGEMPTY);
                 }
                 else //if (tileTopBits == BOARD_TILE_FILLED & 0xF0)
                 {
-                    vram_set(0x9800 + (y * 0x20) + x, TILE_BGFILLED);
+                    vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_BGFILLED);
                 }
             }
             else if (tileBottomBits == BOARD_TILE_NODE)
             {
                 if (nodeStyle == STYLE_NUMS)
                 {
-                    vram_set(0x9800 + (y * 0x20) + x, TILE_NUMNODE1 + (board[y][x] >> 4));
+                    vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_NUMNODE1 + (board[y][x] >> 4));
                 }
                 else if (nodeStyle == STYLE_SHAPES)
                 {
-                    vram_set(0x9800 + (y * 0x20) + x, TILE_SHAPENODE1 + (board[y][x] >> 4));
+                    vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_SHAPENODE1 + (board[y][x] >> 4));
                 }
             }
             else // Since we're just drawing the initial board state, it should be impossible for there to be connections.
@@ -145,11 +149,11 @@ void drawOneTile(uint8_t x, uint8_t y)
         case 0:
             if (tile == BOARD_TILE_FILLED)
             {
-                vram_set(0x9800 + (y * 0x20) + x, TILE_BGFILLED);
+                vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_BGFILLED);
             }
             else
             {
-                vram_set(0x9800 + (y * 0x20) + x, TILE_BGEMPTY);
+                vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_BGEMPTY);
             }
             break;
         case BOARD_TILE_NODE_RIGHT:
@@ -167,15 +171,15 @@ void drawOneTile(uint8_t x, uint8_t y)
         case BOARD_TILE_NODE:
             if (nodeStyle == STYLE_NUMS)
             {
-                vram_set(0x9800 + (y * 0x20) + x, TILE_NUMNODE1 + (tile >> 4));
+                vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_NUMNODE1 + (tile >> 4));
                 break;
             }
             nodeOffset = 0;
         NODE_WITH_OFFSET:
-            vram_set(0x9800 + (y * 0x20) + x, TILE_SHAPENODE1 + (tile >> 4) + nodeOffset);
+            vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_SHAPENODE1 + (tile >> 4) + nodeOffset);
             break;
         default: // must be connection
-            vram_set(0x9800 + (y * 0x20) + x, TILE_CONNECT1 + (tile & 0xF));
+            vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_CONNECT1 + (tile & 0xF));
             break;
     }
 }
@@ -413,6 +417,21 @@ void main() {
     curLevelPackAddr = testLevels;
     loadLevel(2);
 
+    // set scroll based on level size
+    rSCY = (8*14) - (((16 - curLevelHeight) >> 1) * 8);
+    rSCX = (8*12) - (((16 - curLevelWidth) >> 1) * 8);
+    cursorYOffset = ((144 - (curLevelHeight * 8)) / 2) + OAM_Y_OFS - 8;
+    cursorXOffset = ((160 - (curLevelWidth * 8)) / 2) + OAM_X_OFS - 8;
+    // adjust scroll by half tile for odd-sized levels
+    if (curLevelHeight & 1) { rSCY -= 4; }
+    if (curLevelWidth & 1) { rSCX -= 4; }
+
+
+    // fill tilemap with BGFILLED
+    for (uint16_t i = 0x9800; i < 0x9C00; i++)
+    {
+        vram_set(i, TILE_BGFILLED);
+    }
     drawInitialBoard();
 
     // Put the cursor in the top-leftmost open space
@@ -483,8 +502,8 @@ void main() {
         }
 
         // Screen to OAM coordinates
-        shadow_oam[0].y = (cursorBoardY * 8) + 16;
-        shadow_oam[0].x = (cursorBoardX * 8) + 8;
+        shadow_oam[0].y = (cursorBoardY * 8) + cursorYOffset;
+        shadow_oam[0].x = (cursorBoardX * 8) + cursorXOffset;
 
         //Wait for VBLANK
         HALT();

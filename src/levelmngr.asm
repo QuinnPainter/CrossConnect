@@ -33,9 +33,11 @@ _loadLevel::
     ld b, a
     swap a
     and $0F
+    inc a ; increment width and height, so the max size is 16x16 not 15x15
     ld [_curLevelWidth], a
     ld a, b
     and $0F
+    inc a
     ld [_curLevelHeight], a
 
     push hl ; save puzzle definition pointer for later
