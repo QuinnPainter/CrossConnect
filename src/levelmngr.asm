@@ -17,6 +17,9 @@ _loadLevel::
     ld l, a
     ld a, b ; move level index into A
 
+    or a
+    jr z, .doneFindPuzzle ; special case for index 0, HL is already at puzzle
+
     ld b, 0
 :   ld c, [hl] ; BC = first entry in puzzle definition = number of nodes / bytes
     inc c ; skip past num nodes byte and puzzle dimensions byte
@@ -24,6 +27,7 @@ _loadLevel::
     add hl, bc ; go to next entry
     dec a
     jr nz, :-
+.doneFindPuzzle:
 
     ; Now HL is at the beginning of the puzzle definition
     ld a, [hli] ; save num nodes

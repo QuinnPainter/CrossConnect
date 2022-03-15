@@ -32,7 +32,7 @@ def genPack(width, height, numLevels, name):
         outPuz.append(0) # placeholder for node count
         outPuz.append(((width - 1) << 4) | height - 1)
 
-        curNodeNum = 1
+        curNodeNum = 0
         while (True):
             curPos = 0
             node1Pos = None

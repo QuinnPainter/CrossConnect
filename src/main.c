@@ -4,6 +4,7 @@
 #include "sdk/assets.h"
 #include "sdk/joypad.h"
 #include "sdk/interrupt.h"
+#include "sdk/system.h"
 #include "helpers.h"
 #include "levelmngr.h"
 
@@ -47,6 +48,8 @@ LEVELPACK(testLevels, "testlevels.bin");
 
 #define BOARD_VRAM 0x99CD
 
+#define CURSOR_ANIM_SPEED 50 // number of frames between anim frames
+
 uint8_t nodeStyle = 1; // 0 = numbers, 1 = shapes
 uint8_t cursorBoardPrevX = 0; // Old cursor board position
 uint8_t cursorBoardPrevY = 0;
@@ -55,6 +58,7 @@ uint8_t cursorBoardY = 1;
 uint8_t cursorMoveDirection = 0; // Which direction the cursor moved. If 0, did not move.
 uint8_t cursorXOffset;
 uint8_t cursorYOffset;
+uint8_t cursorAnimCtr = CURSOR_ANIM_SPEED;
 
 uint8_t board[18][18];
 
@@ -86,6 +90,28 @@ const uint8_t initialBoard[18][18] = {
 #undef F
 #undef N1
 #undef N2*/
+
+const uint16_t bgpal[8*4] = {
+    PAL24(0xFFFFFF), PAL24(0x999999), PAL24(0x444444), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+};
+
+const uint16_t objpal[8*4] = {
+    PAL24(0xFFFFFF), PAL24(0x999999), PAL24(0x444444), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+};
 
 // Inverts a direction, while maintaining the colour value.
 uint8_t invertDirection(uint8_t dir)
@@ -352,6 +378,17 @@ inline void eraseTileConnections(uint8_t x, uint8_t y)
 void main() {
     lcd_off(); // Disable screen so we can copy to VRAM freely
 
+    if (cpu_type == CPU_CGB)
+    {
+        cgb_background_palette(bgpal);
+        cgb_object_palette(objpal);
+        //BGB_BREAKPOINT();
+    }
+    else if (cpu_type == CPU_DMG)
+    {
+        CRASH_POINT();
+    }
+
     memcpy((void*)0x8000, cursorTiles, cursorTiles_end - cursorTiles);
     memcpy((void*)0x8800, backgroundTiles, backgroundTiles_end - backgroundTiles);
     memcpy((void*)0x8900, connectionTiles, connectionTiles_end - connectionTiles);
@@ -403,10 +440,10 @@ void main() {
     //Make sure sprites and the background are drawn
     rLCDC = LCDC_ON | LCDC_OBJON | LCDC_BGON;
 
-    //Setup the VBLANK interrupt, but we don't actually enable interrupt handling.
-    // We only do this, so HALT waits for VBLANK.
+    //Setup the VBLANK interrupt.
     rIF = 0;
     rIE = IE_VBLANK;
+    ENABLE_INTERRUPTS();
 
     // Init joypad state
     joypad_state = 0;
@@ -415,7 +452,7 @@ void main() {
 
     memset(board, BOARD_TILE_FILLED, sizeof(board));
     curLevelPackAddr = testLevels;
-    loadLevel(2);
+    loadLevel(0);
 
     // set scroll based on level size
     rSCY = (8*14) - (((16 - curLevelHeight) >> 1) * 8);
@@ -507,9 +544,18 @@ void main() {
 
         //Wait for VBLANK
         HALT();
-        rIF = 0;    //As global interrupts are not enabled, we need to clear the interrupt flag.
-
-        //Copy the sprites into OAM memory
-        oam_dma_copy();
     }
+}
+
+ISR_VBLANK()
+{
+    cursorAnimCtr--;
+    if (cursorAnimCtr == 0)
+    {
+        cursorAnimCtr = CURSOR_ANIM_SPEED;
+        if (shadow_oam[0].tile == TILE_CURSOR1) { shadow_oam[0].tile = TILE_CURSOR2; }
+        else { shadow_oam[0].tile = TILE_CURSOR1; }
+    }
+
+    oam_dma_copy();
 }
