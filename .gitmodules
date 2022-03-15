@@ -1,6 +1,0 @@
-[submodule "levelgen/numberlink"]
-	path = levelgen/numberlink
-	url = https://github.com/thomasahle/numberlink.git
-[submodule "levelgen/solver"]
-	path = levelgen/solver
-	url = https://github.com/imos/Puzzle.git
