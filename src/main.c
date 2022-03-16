@@ -300,9 +300,16 @@ inline bool checkGameWon()
 {
     for (uint8_t* boardPtr = (uint8_t*)board; boardPtr < (uint8_t*)board + sizeof(board); boardPtr++)
     {
-        if (((*boardPtr) & 0x0F) == BOARD_TILE_NODE || (*boardPtr) == BOARD_TILE_EMPTY)
+        if ((*boardPtr) == BOARD_TILE_EMPTY) { return false; }
+        // check for unconnected nodes and dangling connections
+        switch ((*boardPtr) & 0x0F)
         {
-            return false;
+            case BOARD_TILE_NODE:
+            case 0b1000:
+            case 0b0100:
+            case 0b0010:
+            case 0b0001:
+                return false;
         }
     }
     return true;
@@ -452,7 +459,7 @@ void main() {
 
     memset(board, BOARD_TILE_FILLED, sizeof(board));
     curLevelPackAddr = testLevels;
-    loadLevel(0);
+    loadLevel(1);
 
     // set scroll based on level size
     rSCY = (8*14) - (((16 - curLevelHeight) >> 1) * 8);

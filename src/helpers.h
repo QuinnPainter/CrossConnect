@@ -11,7 +11,7 @@
 #define LEVELPACK(var_name, filename) \
     void __ ## var_name ## __() __naked { \
         __asm__("_" #var_name "::"); \
-        __asm__(".incbin \"levelgen/levels/" filename "\""); \
+        __asm__(".incbin \"_build/levels/" filename "\""); \
         __asm__("_" #var_name "_end::"); \
     } EXTERN_ASSET(var_name)
 

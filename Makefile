@@ -6,3 +6,8 @@ MBC     := ROM
 TARGETS := DMG CGB
 
 include gbsdk/rules.mk
+
+$(BUILD)/levels/%.bin: levelgen/levels/%.txt
+	@echo Converting $<
+	@mkdir -p $(dir $@)
+	@python3 levelgen/levelconvert.py $< $@
