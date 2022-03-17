@@ -195,13 +195,13 @@ void drawOneTile(uint8_t x, uint8_t y)
             nodeOffset = 0x10;
             goto NODE_WITH_OFFSET;
         case BOARD_TILE_NODE:
+            nodeOffset = 0;
+        NODE_WITH_OFFSET:
             if (nodeStyle == STYLE_NUMS)
             {
                 vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_NUMNODE1 + (tile >> 4));
                 break;
             }
-            nodeOffset = 0;
-        NODE_WITH_OFFSET:
             vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_SHAPENODE1 + (tile >> 4) + nodeOffset);
             break;
         default: // must be connection
