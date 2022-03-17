@@ -37,11 +37,11 @@ LEVELPACK(testLevels, "testlevels.bin");
 
 #define TILE_CURSOR1 0x00
 #define TILE_CURSOR2 0x01
-#define TILE_BGEMPTY 0x80
-#define TILE_BGFILLED 0x81
 #define TILE_CONNECT1 0x90
 #define TILE_NUMNODE1 0xA0
 #define TILE_SHAPENODE1 0xB0
+#define TILE_BGEMPTY TILE_CONNECT1
+#define TILE_BGFILLED 0x80
 
 #define STYLE_NUMS 0
 #define STYLE_SHAPES 1
@@ -50,7 +50,7 @@ LEVELPACK(testLevels, "testlevels.bin");
 
 #define CURSOR_ANIM_SPEED 50 // number of frames between anim frames
 
-uint8_t nodeStyle = 1; // 0 = numbers, 1 = shapes
+uint8_t nodeStyle = 0; // 0 = numbers, 1 = shapes
 uint8_t cursorBoardPrevX = 0; // Old cursor board position
 uint8_t cursorBoardPrevY = 0;
 uint8_t cursorBoardX = 1; // Current cursor board position
@@ -433,7 +433,7 @@ void main() {
     //Setup the OAM for sprite drawing
     oam_init();
 
-    //Set some default DMG palette data
+    //Set some default DMG palette data (Ignored in CGB mode)
     rBGP = 0b11100100;
     rOBP0 = 0b11100100;
     rOBP1 = 0b11100100;
@@ -459,7 +459,7 @@ void main() {
 
     memset(board, BOARD_TILE_FILLED, sizeof(board));
     curLevelPackAddr = testLevels;
-    loadLevel(1);
+    loadLevel(2);
 
     // set scroll based on level size
     rSCY = (8*14) - (((16 - curLevelHeight) >> 1) * 8);
