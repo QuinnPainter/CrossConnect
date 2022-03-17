@@ -15,4 +15,13 @@
         __asm__("_" #var_name "_end::"); \
     } EXTERN_ASSET(var_name)
 
+// Useful for 8.8 fixed point values. Taken from GBDK/types.h
+typedef union _fixed {
+  struct {
+    uint8_t l;
+    uint8_t h;
+  } b;
+  uint16_t w;
+} fixed;
+
 #endif//HELPERS

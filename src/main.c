@@ -7,6 +7,7 @@
 #include "sdk/system.h"
 #include "helpers.h"
 #include "levelmngr.h"
+#include "cursor.h"
 
 enum tileTypes {
     BOARD_TILE_EMPTY = 0b00000000,
@@ -35,8 +36,7 @@ ASSET(nodeShapeTiles, "nodeShapes.2bpp");
 ASSET(connectionTiles, "connections.2bpp");
 LEVELPACK(testLevels, "testlevels.bin");
 
-#define TILE_CURSOR1 0x00
-#define TILE_CURSOR2 0x01
+#define TILE_CURSOR 0x00
 #define TILE_CONNECT1 0x90
 #define TILE_NUMNODE1 0xA0
 #define TILE_SHAPENODE1 0xB0
@@ -48,8 +48,6 @@ LEVELPACK(testLevels, "testlevels.bin");
 
 #define BOARD_VRAM 0x99CD
 
-#define CURSOR_ANIM_SPEED 50 // number of frames between anim frames
-
 uint8_t nodeStyle = 0; // 0 = numbers, 1 = shapes
 uint8_t cursorBoardPrevX = 0; // Old cursor board position
 uint8_t cursorBoardPrevY = 0;
@@ -58,7 +56,6 @@ uint8_t cursorBoardY = 1;
 uint8_t cursorMoveDirection = 0; // Which direction the cursor moved. If 0, did not move.
 uint8_t cursorXOffset;
 uint8_t cursorYOffset;
-uint8_t cursorAnimCtr = CURSOR_ANIM_SPEED;
 
 uint8_t board[18][18];
 
@@ -103,9 +100,9 @@ const uint16_t bgpal[8*4] = {
 };
 
 const uint16_t objpal[8*4] = {
-    PAL24(0xFFFFFF), PAL24(0x999999), PAL24(0x444444), PAL24(0x000000),
-    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
-    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0xFFFFFF),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x999999),
+    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x444444),
     PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
     PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
     PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
@@ -393,7 +390,7 @@ void main() {
     }
     else if (cpu_type == CPU_DMG)
     {
-        CRASH_POINT();
+        //CRASH_POINT();
     }
 
     memcpy((void*)0x8000, cursorTiles, cursorTiles_end - cursorTiles);
@@ -441,7 +438,7 @@ void main() {
     //Put some sprites on the screen
     shadow_oam[0].y = 0x00;
     shadow_oam[0].x = 0x00;
-    shadow_oam[0].tile = TILE_CURSOR1;
+    shadow_oam[0].tile = TILE_CURSOR;
     shadow_oam[0].attr = 0x00;
 
     //Make sure sprites and the background are drawn
@@ -546,8 +543,8 @@ void main() {
         }
 
         // Screen to OAM coordinates
-        shadow_oam[0].y = (cursorBoardY * 8) + cursorYOffset;
-        shadow_oam[0].x = (cursorBoardX * 8) + cursorXOffset;
+        cursorTargetY = (cursorBoardY * 8) + cursorYOffset;
+        cursorTargetX = (cursorBoardX * 8) + cursorXOffset;
 
         //Wait for VBLANK
         HALT();
@@ -556,13 +553,6 @@ void main() {
 
 ISR_VBLANK()
 {
-    cursorAnimCtr--;
-    if (cursorAnimCtr == 0)
-    {
-        cursorAnimCtr = CURSOR_ANIM_SPEED;
-        if (shadow_oam[0].tile == TILE_CURSOR1) { shadow_oam[0].tile = TILE_CURSOR2; }
-        else { shadow_oam[0].tile = TILE_CURSOR1; }
-    }
-
     oam_dma_copy();
+    updateCursorAnimation();
 }
