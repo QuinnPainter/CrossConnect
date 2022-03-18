@@ -28,7 +28,8 @@ void updateCursorAnimation()
         }
         else // DMG
         {
-            rOBP0 = (rOBP0 >> 2) | (rOBP0 << 6); // rotate right by 2
+            // sdcc doesn't optimise this into a single rotation, even though it's supposed to. ugh.
+            rOBP0 = ((rOBP0 >> 2) | (rOBP0 << 6)); // rotate right by 2
             if ((rOBP0 & 0b11000000) == 0b11000000)
             {
                 cursorAnimCtr = CURSOR_ANIM_SPEED * 3; // extend the solid colour frame

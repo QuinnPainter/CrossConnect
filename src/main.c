@@ -146,16 +146,17 @@ void drawOneTile(uint8_t x, uint8_t y)
     rVBK = 0; // switch to tilemap vram bank (only for CGB)
     uint8_t tile = board[y][x];
     uint8_t nodeOffset;
+    uint16_t mapAddr = BOARD_VRAM + (y * 0x20) + x;
     switch (tile & 0x0F)
     {
         case 0:
             if (tile == BOARD_TILE_FILLED)
             {
-                vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_BGFILLED);
+                vram_set(mapAddr, TILE_BGFILLED);
             }
             else
             {
-                vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_BGEMPTY);
+                vram_set(mapAddr, TILE_BGEMPTY);
             }
             break;
         case BOARD_TILE_NODE_RIGHT:
@@ -175,10 +176,10 @@ void drawOneTile(uint8_t x, uint8_t y)
         NODE_WITH_OFFSET:
             if (nodeStyle == STYLE_NUMS)
             {
-                vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_NUMNODE1 + (tile >> 4));
+                vram_set(mapAddr, TILE_NUMNODE1 + (tile >> 4));
                 break;
             }
-            vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_SHAPENODE1 + (tile >> 4) + nodeOffset);
+            vram_set(mapAddr, TILE_SHAPENODE1 + (tile >> 4) + nodeOffset);
             break;
         default: // must be connection
         {
@@ -187,11 +188,11 @@ void drawOneTile(uint8_t x, uint8_t y)
             {
                 baseTile = TILE_CONNECTALT;
             }
-            vram_set(BOARD_VRAM + (y * 0x20) + x, baseTile + (tile & 0xF));
+            vram_set(mapAddr, baseTile + (tile & 0xF));
             if (cpu_type == CPU_CGB)
             {
                 rVBK = 1; // switch to CGB colour attribute bank
-                vram_set(BOARD_VRAM + (y * 0x20) + x, (tile >> 4) & 0b111); // set colour palette for tile
+                vram_set(mapAddr, (tile >> 4) & 0b111); // set colour palette for tile
             }
             break;
         }
