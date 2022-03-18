@@ -3,7 +3,7 @@
 #include "sdk/system.h"
 #include "cursor.h"
 
-#define CURSOR_ANIM_SPEED 10 // number of frames between anim frames
+#define CURSOR_ANIM_SPEED 8 // number of frames between anim frames
 
 uint8_t cursorAnimCtr = CURSOR_ANIM_SPEED;
 uint8_t cursorTargetX = 0;
@@ -23,7 +23,7 @@ void updateCursorAnimation()
             shadow_oam[0].attr = (shadow_oam[0].attr + 1) & 3;
             if (shadow_oam[0].attr == 3)
             {
-                cursorAnimCtr = CURSOR_ANIM_SPEED * 2; // extend the solid colour frame
+                cursorAnimCtr = CURSOR_ANIM_SPEED * 3; // extend the solid colour frame
             }
         }
         else // DMG
@@ -31,7 +31,7 @@ void updateCursorAnimation()
             rOBP0 = (rOBP0 >> 2) | (rOBP0 << 6); // rotate right by 2
             if ((rOBP0 & 0b11000000) == 0b11000000)
             {
-                cursorAnimCtr = CURSOR_ANIM_SPEED * 2; // extend the solid colour frame
+                cursorAnimCtr = CURSOR_ANIM_SPEED * 3; // extend the solid colour frame
             }
         }
     }

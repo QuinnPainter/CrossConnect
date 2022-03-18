@@ -19,10 +19,6 @@ enum tileTypes {
     BOARD_TILE_NODE_TOP = 0b0111,
     // All other configurations of the bottom 4 bits are connections,
     // with each bit representing a direction and with the top 4 bits being colour.
-    // 1000 = Top
-    // 0100 = Bottom
-    // 0010 = Left
-    // 0001 = Right
     DIR_UP = 0b1000,
     DIR_DOWN = 0b0100,
     DIR_LEFT = 0b0010,
@@ -32,12 +28,14 @@ enum tileTypes {
 ASSET(backgroundTiles, "background.2bpp");
 ASSET(cursorTiles, "cursor.2bpp");
 ASSET(nodeNumberTiles, "nodeNumbers.2bpp");
+ASSET(nodeNumberTilesCGB, "nodeNumbersCGB.2bpp");
 ASSET(nodeShapeTiles, "nodeShapes.2bpp");
 ASSET(connectionTiles, "connections.2bpp");
 LEVELPACK(testLevels, "testlevels.bin");
 
 #define TILE_CURSOR 0x00
 #define TILE_CONNECT1 0x90
+#define TILE_CONNECTALT 0x00
 #define TILE_NUMNODE1 0xA0
 #define TILE_SHAPENODE1 0xB0
 #define TILE_BGEMPTY TILE_CONNECT1
@@ -59,44 +57,17 @@ uint8_t cursorYOffset;
 
 uint8_t board[18][18];
 
-/*#define F BOARD_TILE_FILLED
-#define E BOARD_TILE_EMPTY
-#define N1 (0b00000000 + BOARD_TILE_NODE)
-#define N2 (0b00010000 + BOARD_TILE_NODE)
-const uint8_t initialBoard[18][18] = {
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, N1, E, E, E, E, E, E, N1, N2, E, E, E, E, E, E, N2, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F},
-    {F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F}
-};
-#undef E
-#undef F
-#undef N1
-#undef N2*/
-
+#define BGCOLOUR PAL24(0xFFFFFF)
+#define GRIDCOLOUR PAL24(0x999999)
 const uint16_t bgpal[8*4] = {
-    PAL24(0xFFFFFF), PAL24(0x999999), PAL24(0x444444), PAL24(0x000000),
-    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
-    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
-    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
-    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
-    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
-    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
-    PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
+    BGCOLOUR, GRIDCOLOUR, PAL24(0x000000), PAL24(0xFF0000), // red
+    BGCOLOUR, GRIDCOLOUR, PAL24(0x000000), PAL24(0x00FF00), // green
+    BGCOLOUR, GRIDCOLOUR, PAL24(0x000000), PAL24(0x0000FF), // blue
+    BGCOLOUR, GRIDCOLOUR, PAL24(0x000000), PAL24(0xFF7700), // orange
+    BGCOLOUR, GRIDCOLOUR, PAL24(0x000000), PAL24(0xFFFF00), // yellow
+    BGCOLOUR, GRIDCOLOUR, PAL24(0x000000), PAL24(0xFF00FF), // pink
+    BGCOLOUR, GRIDCOLOUR, PAL24(0x000000), PAL24(0x00FFFF), // cyan
+    BGCOLOUR, GRIDCOLOUR, PAL24(0x000000), PAL24(0x6000d6), // purple
 };
 
 const uint16_t objpal[8*4] = {
@@ -131,28 +102,35 @@ void drawInitialBoard()
     {
         for (uint8_t x = 0; x < 18; x++)
         {
+            rVBK = 0; // switch to tilemap vram bank (only for CGB)
             uint8_t tileBottomBits = board[y][x] & 0x0F;
             uint8_t tileTopBits = board[y][x] & 0xF0;
+            uint16_t mapAddr = BOARD_VRAM + (y * 0x20) + x;
             if (tileBottomBits == 0)
             {
                 if (tileTopBits == (BOARD_TILE_EMPTY & 0xF0))
                 {
-                    vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_BGEMPTY);
+                    vram_set(mapAddr, TILE_BGEMPTY);
                 }
                 else //if (tileTopBits == BOARD_TILE_FILLED & 0xF0)
                 {
-                    vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_BGFILLED);
+                    vram_set(mapAddr, TILE_BGFILLED);
                 }
             }
             else if (tileBottomBits == BOARD_TILE_NODE)
             {
                 if (nodeStyle == STYLE_NUMS)
                 {
-                    vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_NUMNODE1 + (board[y][x] >> 4));
+                    vram_set(mapAddr, TILE_NUMNODE1 + (tileTopBits >> 4));
                 }
                 else if (nodeStyle == STYLE_SHAPES)
                 {
-                    vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_SHAPENODE1 + (board[y][x] >> 4));
+                    vram_set(mapAddr, TILE_SHAPENODE1 + (tileTopBits >> 4));
+                }
+                if (cpu_type == CPU_CGB)
+                {
+                    rVBK = 1; // switch to CGB colour attribute bank
+                    vram_set(mapAddr, (tileTopBits >> 4) & 0b111); // set colour palette for tile
                 }
             }
             else // Since we're just drawing the initial board state, it should be impossible for there to be connections.
@@ -165,6 +143,7 @@ void drawInitialBoard()
 
 void drawOneTile(uint8_t x, uint8_t y)
 {
+    rVBK = 0; // switch to tilemap vram bank (only for CGB)
     uint8_t tile = board[y][x];
     uint8_t nodeOffset;
     switch (tile & 0x0F)
@@ -202,8 +181,20 @@ void drawOneTile(uint8_t x, uint8_t y)
             vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_SHAPENODE1 + (tile >> 4) + nodeOffset);
             break;
         default: // must be connection
-            vram_set(BOARD_VRAM + (y * 0x20) + x, TILE_CONNECT1 + (tile & 0xF));
+        {
+            uint8_t baseTile = TILE_CONNECT1;
+            if (cpu_type == CPU_CGB && tile & 0b10000000)
+            {
+                baseTile = TILE_CONNECTALT;
+            }
+            vram_set(BOARD_VRAM + (y * 0x20) + x, baseTile + (tile & 0xF));
+            if (cpu_type == CPU_CGB)
+            {
+                rVBK = 1; // switch to CGB colour attribute bank
+                vram_set(BOARD_VRAM + (y * 0x20) + x, (tile >> 4) & 0b111); // set colour palette for tile
+            }
             break;
+        }
     }
 }
 
@@ -379,61 +370,143 @@ inline void eraseTileConnections(uint8_t x, uint8_t y)
     drawOneTile(x, y);
 }
 
-void main() {
+void genConnectedNodeTiles(uint8_t* startPtr, uint8_t* endPtr, bool useAltColour)
+{
+    if (useAltColour)
+    {
+        // change 01 to 10
+        for (uint8_t* i = startPtr; i < endPtr; i += 16) // top
+        {
+            *(i) &= ~0b00011000;
+            (*(i + 1)) |= 0b00011000;
+        }
+        for (uint8_t* i = startPtr + 0x010E; i < endPtr + 0x010E; i += 16) // bottom
+        {
+            (*i) &= ~0b00011000;
+            (*(i + 1)) |= 0b00011000;
+        }
+        for (uint8_t* i = startPtr + 0x0206; i < endPtr + 0x0206; i += 16) // left
+        {
+            (*i) &= ~0b10000000;
+            (*(i + 1)) |= 0b10000000;
+            (*(i + 2)) &= ~0b10000000;
+            (*(i + 3)) |= 0b10000000;
+        }
+        for (uint8_t* i = startPtr + 0x0306; i < endPtr + 0x0306; i += 16) // right
+        {
+            (*i) &= ~0b00000001;
+            (*(i + 1)) |= 0b00000001;
+            (*(i + 2)) &= ~0b00000001;
+            (*(i + 3)) |= 0b00000001;
+        }
+    }
+    else
+    {
+        // some of the writes aren't needed since there's already a grid box drawn around the node
+        // it doesn't need to change 00 to 11, just 01 to 11
+        for (uint8_t* i = startPtr; i < endPtr; i += 16) // top
+        {
+            //(*i) |= 0b00011000;
+            (*(i + 1)) |= 0b00011000;
+        }
+        for (uint8_t* i = startPtr + 0x010E; i < endPtr + 0x010E; i += 16) // bottom
+        {
+            //(*i) |= 0b00011000;
+            (*(i + 1)) |= 0b00011000;
+        }
+        for (uint8_t* i = startPtr + 0x0206; i < endPtr + 0x0206; i += 16) // left
+        {
+            //(*i) |= 0b10000000;
+            (*(i + 1)) |= 0b10000000;
+            //(*(i + 2)) |= 0b10000000;
+            (*(i + 3)) |= 0b10000000;
+        }
+        for (uint8_t* i = startPtr + 0x0306; i < endPtr + 0x0306; i += 16) // right
+        {
+            //(*i) |= 0b00000001;
+            (*(i + 1)) |= 0b00000001;
+            //(*(i + 2)) |= 0b00000001;
+            (*(i + 3)) |= 0b00000001;
+        }
+    }
+}
+
+void main()
+{
     lcd_off(); // Disable screen so we can copy to VRAM freely
 
     if (cpu_type == CPU_CGB)
     {
         cgb_background_palette(bgpal);
         cgb_object_palette(objpal);
-        //BGB_BREAKPOINT();
     }
     else if (cpu_type == CPU_DMG)
     {
-        //CRASH_POINT();
+        rBGP = 0b11100100;
+        rOBP0 = 0b11100100;
+        rOBP1 = 0b11100100;
     }
 
     memcpy((void*)0x8000, cursorTiles, cursorTiles_end - cursorTiles);
     memcpy((void*)0x8800, backgroundTiles, backgroundTiles_end - backgroundTiles);
     memcpy((void*)0x8900, connectionTiles, connectionTiles_end - connectionTiles);
-    memcpy((void*)0x8A00, nodeNumberTiles, nodeNumberTiles_end - nodeNumberTiles);
     memcpy((void*)0x8B00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // unconnected
-    memcpy((void*)0x8C00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // top
-    memcpy((void*)0x8D00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // bottom
-    memcpy((void*)0x8E00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // left
-    memcpy((void*)0x8F00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // right
-    // Generate the "connected" tiles for nodeShapes
-    for (uint8_t* i = (uint8_t*)0x8C00; i < (uint8_t*)0x8D00; i += 16) // top
+
+    // Modify the tiles for CGB
+    if (cpu_type == CPU_CGB)
     {
-        (*i) |= 0b00011000;
-        (*(i + 1)) |= 0b00011000;
+        memcpy((void*)0x8A00, nodeNumberTilesCGB, nodeNumberTilesCGB_end - nodeNumberTilesCGB);
+
+        // Copy in the tiles for the alternate colour connections
+        memcpy((void*)0x9000, connectionTiles, connectionTiles_end - connectionTiles);
+
+        // Convert the colours for the alternate colour connections
+        for (uint8_t* i = (uint8_t*)0x9000; i < (uint8_t*)(0x9000 + (connectionTiles_end - connectionTiles)); i += 2)
+        {
+            for (uint8_t a = 1; a != 0; a <<= 1)
+            {
+                if (((*i) & a) && ((*(i + 1)) & a))
+                {
+                    (*i) &= ~a;
+                }
+            }
+        }
+
+        // Convert the colours for the alternate colour shape nodes
+        for (uint8_t* i = (uint8_t*)0x8B80; i < (uint8_t*)(0x8B80 + 16 * 8); i += 2)
+        {
+            for (uint8_t a = 1; a != 0; a <<= 1)
+            {
+                if (((*i) & a) && ((*(i + 1)) & a))
+                {
+                    (*i) &= ~a;
+                }
+            }
+        }
+
+        memcpy((void*)0x8C00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // top
+        memcpy((void*)0x8D00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // bottom
+        memcpy((void*)0x8E00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // left
+        memcpy((void*)0x8F00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // right
+
+        // Generate the "connected" tiles for nodeShapes
+        genConnectedNodeTiles((uint8_t*)0x8C00, (uint8_t*)0x8C80, false);
+        genConnectedNodeTiles((uint8_t*)0x8C80, (uint8_t*)0x8D00, true);
     }
-    for (uint8_t* i = (uint8_t*)0x8D0E; i < (uint8_t*)0x8E0E; i += 16) // bottom
+    else // DMG
     {
-        (*i) |= 0b00011000;
-        (*(i + 1)) |= 0b00011000;
-    }
-    for (uint8_t* i = (uint8_t*)0x8E06; i < (uint8_t*)0x8F06; i += 16) // left
-    {
-        (*i) |= 0b10000000;
-        (*(i + 1)) |= 0b10000000;
-        (*(i + 2)) |= 0b10000000;
-        (*(i + 3)) |= 0b10000000;
-    }
-    for (uint8_t* i = (uint8_t*)0x8F06; i < (uint8_t*)0x9006; i += 16) // right
-    {
-        (*i) |= 0b00000001;
-        (*(i + 1)) |= 0b00000001;
-        (*(i + 2)) |= 0b00000001;
-        (*(i + 3)) |= 0b00000001;
+        memcpy((void*)0x8A00, nodeNumberTiles, nodeNumberTiles_end - nodeNumberTiles);
+
+        memcpy((void*)0x8C00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // top
+        memcpy((void*)0x8D00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // bottom
+        memcpy((void*)0x8E00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // left
+        memcpy((void*)0x8F00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // right
+
+        // Generate the "connected" tiles for nodeShapes
+        genConnectedNodeTiles((uint8_t*)0x8C00, (uint8_t*)0x8D00, false);
     }
     //Setup the OAM for sprite drawing
     oam_init();
-
-    //Set some default DMG palette data (Ignored in CGB mode)
-    rBGP = 0b11100100;
-    rOBP0 = 0b11100100;
-    rOBP1 = 0b11100100;
 
     //Put some sprites on the screen
     shadow_oam[0].y = 0x00;
@@ -452,8 +525,6 @@ void main() {
     // Init joypad state
     joypad_state = 0;
 
-    //memcpy(board, initialBoard, sizeof(board));
-
     memset(board, BOARD_TILE_FILLED, sizeof(board));
     curLevelPackAddr = testLevels;
     loadLevel(2);
@@ -469,6 +540,7 @@ void main() {
 
 
     // fill tilemap with BGFILLED
+    rVBK = 0; // make sure we're on the tilemap vram bank
     for (uint16_t i = 0x9800; i < 0x9C00; i++)
     {
         vram_set(i, TILE_BGFILLED);
@@ -513,14 +585,14 @@ void main() {
                 uint8_t curBoardTile = board[cursorBoardY][cursorBoardX];
                 if (isMoveValid(prevBoardTile, curBoardTile))
                 {
-                    // paint new tile we just moved into
-                    paintConnection(cursorBoardX, cursorBoardY, cursorMoveDirection);
-                    // paint previous tile
-                    paintConnection(cursorBoardPrevX, cursorBoardPrevY, invertDirection(cursorMoveDirection));
                     // set colour of new tile to be the same as colour of previous tile
                     board[cursorBoardY][cursorBoardX] =
                             (board[cursorBoardY][cursorBoardX] & 0x0F)
                             | (board[cursorBoardPrevY][cursorBoardPrevX] & 0xF0);
+                    // paint new tile we just moved into
+                    paintConnection(cursorBoardX, cursorBoardY, cursorMoveDirection);
+                    // paint previous tile
+                    paintConnection(cursorBoardPrevX, cursorBoardPrevY, invertDirection(cursorMoveDirection));
                 }
 
                 if (checkGameWon())
