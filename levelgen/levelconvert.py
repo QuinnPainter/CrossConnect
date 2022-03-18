@@ -45,10 +45,15 @@ for inputLevel in inputLevelArray:
             curPos += 1
         
         if (node1Pos == None):
+            nodeIndex -= 1 # since this run failed, fall back to previous node count
             break
         levelByteArray.append(((node1Pos % levelWidth) << 4) | math.floor(node1Pos / levelWidth))
         levelByteArray.append(((node2Pos % levelWidth) << 4) | math.floor(node2Pos / levelWidth))
-    levelByteArray[0] = nodeIndex * 2
+    # nodeIndex starts at 0, so make it start at 1
+    # this may seem redundant with the nodeIndex -= 1 from earlier, but this is necessary
+    # for the case where there are 16 node pairs and the loop falls through instead of
+    # looping an additional time and breaking
+    levelByteArray[0] = (nodeIndex + 1) * 2
     outByteArray += levelByteArray
 
 with open(sys.argv[2], "wb") as f:
