@@ -40,6 +40,14 @@ LEVELPACK(testLevels, "testlevels.bin");
 #define TILE_SHAPENODE1 0xB0
 #define TILE_BGEMPTY TILE_CONNECT1
 #define TILE_BGFILLED 0x80
+#define TILE_BGTOPLEFT 0x81   // I would stack these like TILE_BGFILLED + 1, but then sdcc gives
+#define TILE_BGTOPRIGHT 0x82  // "overflow in implicit constant conversion" warnings, for some reason.
+#define TILE_BGBOTTOMLEFT 0x83
+#define TILE_BGBOTTOMRIGHT 0x84
+#define TILE_BGTOP 0x85
+#define TILE_BGBOTTOM 0x86
+#define TILE_BGLEFT 0x87
+#define TILE_BGRIGHT 0x88
 
 #define STYLE_NUMS 0
 #define STYLE_SHAPES 1
@@ -98,6 +106,7 @@ uint8_t invertDirection(uint8_t dir)
 
 void drawInitialBoard()
 {
+    // Draw board array
     for (uint8_t y = 0; y < 18; y++)
     {
         for (uint8_t x = 0; x < 18; x++)
@@ -137,6 +146,24 @@ void drawInitialBoard()
             {
                 BGB_BREAKPOINT();
             }
+        }
+    }
+    // Draw border
+    {
+        uint16_t boardBottomVRAM = (((uint16_t)curLevelHeight + 1) << 5);
+        vram_set(BOARD_VRAM, TILE_BGTOPLEFT);
+        vram_set(BOARD_VRAM + curLevelWidth + 1, TILE_BGTOPRIGHT);
+        vram_set(BOARD_VRAM + boardBottomVRAM, TILE_BGBOTTOMLEFT);
+        vram_set(BOARD_VRAM + boardBottomVRAM + curLevelWidth + 1, TILE_BGBOTTOMRIGHT);
+        for (uint16_t i = BOARD_VRAM + 1; i < BOARD_VRAM + curLevelWidth + 1; i++)
+        {
+            vram_set(i, TILE_BGTOP);
+            vram_set(i + boardBottomVRAM, TILE_BGBOTTOM);
+        }
+        for (uint16_t i = BOARD_VRAM + 0x20; i < BOARD_VRAM + boardBottomVRAM; i += 0x20)
+        {
+            vram_set(i, TILE_BGLEFT);
+            vram_set(i + curLevelWidth + 1, TILE_BGRIGHT);
         }
     }
 }
