@@ -359,6 +359,8 @@ void eraseConnection(uint8_t x, uint8_t y, uint8_t direction)
         case BOARD_TILE_NODE: // do nothing
             break;
         default: // must be connection (or empty / wall)
+            // don't redraw walls (so it doesn't screw up the borders)
+            if (board[y][x] == BOARD_TILE_FILLED) { return; }
             if (board[y][x] & direction) // check if it's connected in that direction
             {
                 board[y][x] &= ~direction;
@@ -610,8 +612,7 @@ void main()
             uint8_t prevBoardTile = board[cursorBoardPrevY][cursorBoardPrevX];
             if (prevBoardTile != BOARD_TILE_EMPTY) // must be node or connection if not empty
             {
-                uint8_t curBoardTile = board[cursorBoardY][cursorBoardX];
-                if (isMoveValid(prevBoardTile, curBoardTile))
+                if (isMoveValid(prevBoardTile, board[cursorBoardY][cursorBoardX]))
                 {
                     // set colour of new tile to be the same as colour of previous tile
                     board[cursorBoardY][cursorBoardX] =
@@ -621,12 +622,18 @@ void main()
                     paintConnection(cursorBoardX, cursorBoardY, cursorMoveDirection);
                     // paint previous tile
                     paintConnection(cursorBoardPrevX, cursorBoardPrevY, invertDirection(cursorMoveDirection));
-                }
 
-                if (checkGameWon())
-                {
-                    //todo: game winning
-                    BGB_BREAKPOINT();
+                    if (checkGameWon())
+                    {
+                        //todo: game winning
+                        BGB_BREAKPOINT();
+                    }
+                }
+                else // if paint is not valid, don't move the cursor
+                {   // todo : sound effect for this?
+                    cursorBoardX = cursorBoardPrevX;
+                    cursorBoardY = cursorBoardPrevY;
+                    cursorMoveDirection = 0;
                 }
             }
         }
