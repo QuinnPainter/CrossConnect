@@ -1,7 +1,9 @@
 #include "sdk/oam.h"
 #include "sdk/hardware.h"
 #include "sdk/system.h"
+#include "sdk/joypad.h"
 #include "cursor.h"
+#include "game.h"
 
 #define CURSOR_ANIM_SPEED 8 // number of frames between anim frames
 
@@ -10,6 +12,67 @@ uint8_t cursorTargetX = 0;
 uint8_t cursorTargetY = 0;
 uint16_t cursorCurX = 0; // 8.8 fixed point
 uint16_t cursorCurY = 0;
+
+uint8_t cursorBoardPrevX = 1; // Old cursor board position
+uint8_t cursorBoardPrevY = 1;
+uint8_t cursorBoardX = 1; // Current cursor board position
+uint8_t cursorBoardY = 1;
+uint8_t cursorMoveDirection = 0; // Which direction the cursor moved. If 0, did not move.
+
+// Delayed Auto-Shift variables
+#define DAS_DELAY 20 // Delay after starting to hold the button before the auto-shift activates
+#define DAS_SPEED 4 // Once activated, this is the delay between each simulated button press
+enum dasStates {
+    DAS_WAITING, // nothing held / button just started to be held, delaying for a while
+    DAS_ACTIVE // active and repeatedly pressing the button
+};
+uint8_t das_state = DAS_WAITING;
+uint8_t das_direction = 0;
+uint8_t das_timer = 0;
+
+void processDpadPress(uint8_t dpadState)
+{
+    if (dpadState & (PAD_LEFT | PAD_RIGHT))
+    {
+        cursorBoardPrevX = cursorBoardX; cursorBoardPrevY = cursorBoardY;
+        if (dpadState & PAD_LEFT) {  cursorBoardX--; cursorMoveDirection = DIR_RIGHT; }
+        else if (dpadState & PAD_RIGHT) { cursorBoardX++; cursorMoveDirection = DIR_LEFT; }
+        processMove();
+    }
+    if (dpadState & (PAD_UP | PAD_DOWN))
+    {
+        cursorBoardPrevX = cursorBoardX; cursorBoardPrevY = cursorBoardY;
+        if (dpadState & PAD_UP) { cursorBoardY--; cursorMoveDirection = DIR_DOWN; }
+        else if (dpadState & PAD_DOWN) { cursorBoardY++; cursorMoveDirection = DIR_UP; }
+        processMove();
+    }
+}
+
+void updateCursorMovement()
+{
+    processDpadPress(joypad_pressed);
+    if ((joypad_state & (PAD_LEFT | PAD_RIGHT | PAD_UP | PAD_DOWN)) != das_direction)
+    {
+        // input changed, so restart DAS
+        das_state = DAS_WAITING;
+        das_timer = DAS_DELAY;
+        das_direction = joypad_state & (PAD_LEFT | PAD_RIGHT | PAD_UP | PAD_DOWN);
+    }
+
+    das_timer--;
+    if (das_timer == 0)
+    {
+        das_timer = DAS_SPEED;
+        if (das_state == DAS_WAITING)
+        {
+            das_state = DAS_ACTIVE;
+        }
+        else//if (das_state == DAS_ACTIVE)
+        {
+            processDpadPress(das_direction);
+        }
+    }
+}
 
 void updateCursorAnimation()
 {
