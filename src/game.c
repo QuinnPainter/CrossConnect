@@ -6,17 +6,10 @@
 #include "sdk/interrupt.h"
 #include "sdk/system.h"
 #include "helpers.h"
+#include "gameassets.h"
 #include "levelmngr.h"
 #include "cursor.h"
 #include "game.h"
-
-ASSET(backgroundTiles, "background.2bpp");
-ASSET(cursorTiles, "cursor.2bpp");
-ASSET(nodeNumberTiles, "nodeNumbers.2bpp");
-ASSET(nodeNumberTilesCGB, "nodeNumbersCGB.2bpp");
-ASSET(nodeShapeTiles, "nodeShapes.2bpp");
-ASSET(connectionTiles, "connections.2bpp");
-LEVELPACK(testLevels, "testlevels.bin");
 
 #define TILE_CURSOR 0x00
 #define TILE_CONNECT1 0x90
