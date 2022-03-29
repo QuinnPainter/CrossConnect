@@ -7,6 +7,7 @@
 #include "game.h"
 #include "cursor.h"
 #include "gameassets.h"
+#include "text.h"
 
 #define BGCOLOUR PAL24(0xFFFFFF)
 #define GRIDCOLOUR PAL24(0x999999)
@@ -179,6 +180,9 @@ void main()
     }
     rSCY = 0;
     rSCX = 0;
+    copyString(PlayString, (uint8_t*)0x9983);
+    copyString(StyleString, (uint8_t*)0x99A3);
+    copyString(AboutString, (uint8_t*)0x99C3);
 
     // Setup the OAM for sprite drawing
     oam_init();
