@@ -14,6 +14,9 @@
 
 SECTION "GraphicAssets", ROM0
 
+_fontTiles::
+    INCBIN "_build/assets/font.2bpp"
+_fontTiles_end::
 _backgroundTiles::
     INCBIN "_build/assets/background.2bpp"
 _backgroundTiles_end::

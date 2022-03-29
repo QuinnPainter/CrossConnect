@@ -3,6 +3,7 @@
 
 #include "sdk/assets.h"
 
+EXTERN_ASSET(fontTiles);
 EXTERN_ASSET(backgroundTiles);
 EXTERN_ASSET(cursorTiles);
 EXTERN_ASSET(nodeNumberTiles);

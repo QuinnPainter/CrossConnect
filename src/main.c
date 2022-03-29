@@ -162,6 +162,7 @@ void main()
         // Generate the "connected" tiles for nodeShapes
         genConnectedNodeTiles((uint8_t*)0x8C00, (uint8_t*)0x8D00, false);
     }
+    memcpy((void*)0x9200, fontTiles, fontTiles_end - fontTiles);
 
     // Setup main menu graphics
     memcpy((void*)0x9100, mainMenuTiles, mainMenuTiles_end - mainMenuTiles);
