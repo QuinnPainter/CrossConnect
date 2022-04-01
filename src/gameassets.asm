@@ -20,9 +20,9 @@ _fontTiles_end::
 _backgroundTiles::
     INCBIN "_build/assets/background.2bpp"
 _backgroundTiles_end::
-_cursorTiles::
-    INCBIN "_build/assets/cursor.2bpp"
-_cursorTiles_end::
+_spriteTiles::
+    INCBIN "_build/assets/sprites.2bpp"
+_spriteTiles_end::
 _nodeNumberTiles::
     INCBIN "_build/assets/nodeNumbers.2bpp"
 _nodeNumberTiles_end::

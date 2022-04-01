@@ -33,6 +33,10 @@ const uint16_t objpal[8*4] = {
     PAL24(0x000000), PAL24(0x000000), PAL24(0x000000), PAL24(0x000000),
 };
 
+#define MENUCURSOR_X_POS (OAM_X_OFS + (2*8))
+#define MENUCURSOR_BASE_Y (OAM_Y_OFS + (12*8)) // Position of cursor when cursorSelection is 0
+uint8_t cursorSelection = 0; // 0 = Play, 1 = Style, 2 = About
+
 void genConnectedNodeTiles(uint8_t* startPtr, uint8_t* endPtr, bool useAltColour)
 {
     if (useAltColour)
@@ -111,7 +115,7 @@ void main()
 {
     lcd_off(); // Disable screen so we can copy to VRAM freely
 
-    memcpy((void*)0x8000, cursorTiles, cursorTiles_end - cursorTiles);
+    memcpy((void*)0x8000, spriteTiles, spriteTiles_end - spriteTiles);
     memcpy((void*)0x8800, backgroundTiles, backgroundTiles_end - backgroundTiles);
     memcpy((void*)0x8900, connectionTiles, connectionTiles_end - connectionTiles);
     memcpy((void*)0x8B00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // unconnected
@@ -215,6 +219,12 @@ void main()
 
     // Setup the OAM for sprite drawing
     oam_init();
+
+    // Setup menu cursor sprite
+    shadow_oam[1].y = MENUCURSOR_BASE_Y;
+    shadow_oam[1].x = MENUCURSOR_X_POS;
+    shadow_oam[1].tile = TILE_MENUCURSOR;
+    shadow_oam[1].attr = 0x00;
 
     // Make sure sprites and the background are drawn (also turns the screen on)
     rLCDC = LCDC_ON | LCDC_OBJON | LCDC_BGON;

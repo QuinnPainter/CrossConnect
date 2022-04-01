@@ -83,8 +83,10 @@ void updateCursorAnimation()
         if (cpu_type == CPU_CGB)
         {
             // Loop through palettes 0-3 (also sets all other attributes to 0, may want to change)
-            shadow_oam[0].attr = (shadow_oam[0].attr + 1) & 3;
-            if (shadow_oam[0].attr == 3)
+            uint8_t c = (shadow_oam[0].attr + 1) & 3;
+            shadow_oam[0].attr = c; // game cursor sprite
+            shadow_oam[1].attr = c; // menu cursor sprite
+            if (c == 3)
             {
                 cursorAnimCtr = CURSOR_ANIM_SPEED * 3; // extend the solid colour frame
             }
