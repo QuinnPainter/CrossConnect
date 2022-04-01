@@ -378,6 +378,15 @@ void runGame()
     {
         vram_set(i, TILE_BGFILLED);
     }
+    // fill background with the right colour
+    if (cpu_type == CPU_CGB)
+    {
+        rVBK = 1; // make sure we're on the attribute vram bank
+        for (uint16_t i = 0x9800; i < 0x9C00; i++)
+        {
+            vram_set(i, 0x7); // palette BG 7
+        }
+    }
     drawInitialBoard();
 
     // Put the cursor in the top-leftmost open space

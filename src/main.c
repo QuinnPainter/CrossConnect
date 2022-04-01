@@ -12,14 +12,14 @@
 #define BGCOLOUR PAL24(0xFFFFFF)
 #define GRIDCOLOUR PAL24(0x999999)
 const uint16_t bgpal[8*4] = {
-    BGCOLOUR, GRIDCOLOUR, PAL24(0x000000), PAL24(0xFF0000), // black & red
+    BGCOLOUR, GRIDCOLOUR, PAL24(0x6000D6), PAL24(0xFF0000), // purple & red
     BGCOLOUR, GRIDCOLOUR, PAL24(0xB30033), PAL24(0x00FF00), // reddish-pink & green
     BGCOLOUR, GRIDCOLOUR, PAL24(0x002861), PAL24(0x0000FF), // navy & blue
     BGCOLOUR, GRIDCOLOUR, PAL24(0x00692C), PAL24(0xFF7700), // dark green & orange
     BGCOLOUR, GRIDCOLOUR, PAL24(0x5EAD82), PAL24(0x5E5E5E), // dark blue-green & grey
     BGCOLOUR, GRIDCOLOUR, PAL24(0x704C25), PAL24(0xFF00FF), // brown & pink
     BGCOLOUR, GRIDCOLOUR, PAL24(0xA6BF00), PAL24(0x00FFFF), // yellow & cyan
-    BGCOLOUR, GRIDCOLOUR, PAL24(0x610069), PAL24(0x6000D6), // dark purple & purple
+    BGCOLOUR, GRIDCOLOUR, PAL24(0x610069), PAL24(0x000000), // dark purple & black
 };
 
 const uint16_t objpal[8*4] = {
@@ -92,6 +92,19 @@ void genConnectedNodeTiles(uint8_t* startPtr, uint8_t* endPtr, bool useAltColour
             (*(i + 3)) |= 0b00000001;
         }
     }
+}
+
+// For CGB only. Sets the bg attributes for a 2x3 tile rect.
+// Used to colour in the letters of the title on the main menu.
+void setTitleLetterColour(uint16_t addr, uint8_t value)
+{
+    rVBK = 1; // make sure we're on the attribute vram bank
+    vram_set(addr, value);
+    vram_set(addr+1, value);
+    vram_set(addr+0x20, value);
+    vram_set(addr+0x21, value);
+    vram_set(addr+0x40, value);
+    vram_set(addr+0x41, value);
 }
 
 void main()
@@ -169,17 +182,33 @@ void main()
     memcpy((void*)0x9100, mainMenuTiles, mainMenuTiles_end - mainMenuTiles);
     uint8_t* dstPtr = (uint8_t*)0x9800;
     const uint8_t* srcPtr = mainMenuTilemap;
+    rVBK = 0; // make sure we're on the tilemap vram bank
     for (uint8_t y = 0; y < 18; y++)
     {
         for (uint8_t x = 0; x < 20; x++)
         {
+            if (cpu_type == CPU_CGB)
+            {
+                rVBK = 1; // make sure we're on the attribute vram bank
+                *dstPtr = 0x7; // fill bg with BG palette 7
+                rVBK = 0;
+            }
             // 0x10 = tile offset from tilemap
             (*dstPtr++) = (*srcPtr++) + 0x10;
         }
         dstPtr += 12;
     }
+    if (cpu_type == CPU_CGB)
+    {
+        setTitleLetterColour(0x9841, 0);
+        setTitleLetterColour(0x9843, 1);
+        setTitleLetterColour(0x9845, 2);
+        setTitleLetterColour(0x9847, 3);
+        setTitleLetterColour(0x9849, 5);
+    }
     rSCY = 0;
     rSCX = 0;
+    rVBK = 0; // switch to bg tilemap bank
     copyString(PlayString, (uint8_t*)0x9983);
     copyString(StyleString, (uint8_t*)0x99A3);
     copyString(AboutString, (uint8_t*)0x99C3);
@@ -206,6 +235,8 @@ void main()
         {
             runGame();
         }
+
+        HALT();
     }
 }
 
