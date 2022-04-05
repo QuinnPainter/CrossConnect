@@ -2,6 +2,7 @@
 #define HELPERS_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #define BGB_BREAKPOINT() __asm__("ld b, b") // opcode used as breakpoint in BGB
@@ -15,5 +16,7 @@ typedef union _fixed {
   } b;
   uint16_t w;
 } fixed;
+
+void smoothSlide(uint16_t* srcCoord, uint8_t targetPos);
 
 #endif//HELPERS

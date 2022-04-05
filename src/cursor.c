@@ -103,11 +103,8 @@ void updateCursorAnimation()
     }
 
     // lerp the cursor position
-    // int16_t is so the number is sign-extended in the / 2
-    // + 0x7F is so it aims for the "middle subpixel", helping it move into the right position
-    // this line produces some truly awful code. could optimise this in asm at some point
-    cursorCurX -= (int16_t)(cursorCurX - (((uint16_t)cursorTargetX) << 8) + 0x7F) / 2;
-    cursorCurY -= (int16_t)(cursorCurY - (((uint16_t)cursorTargetY) << 8) + 0x7F) / 2;
+    smoothSlide(&cursorCurX, cursorTargetX);
+    smoothSlide(&cursorCurY, cursorTargetY);
 
     // the lerped position is off by 1 for some reason.
     shadow_oam[0].y = (cursorCurY >> 8) + 1;
