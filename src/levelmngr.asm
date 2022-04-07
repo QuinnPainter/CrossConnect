@@ -8,14 +8,13 @@ _curNodeIndex: ds 1 ; temp value used to store the current node colour
 
 SECTION "level_mngr_functions", ROM0
 
-_loadLevel::
-    ld hl, sp+2
-    ld b, [hl] ; Load level index into B
+_loadLevel:: ; level index is in A
+    ld b, a ; save level index into B
     ld hl, _curLevelPackAddr ; Load level pack start address into HL
     ld a, [hli]
     ld h, [hl]
     ld l, a
-    ld a, b ; move level index into A
+    ld a, b ; restore level index into A
 
     or a
     jr z, .doneFindPuzzle ; special case for index 0, HL is already at puzzle

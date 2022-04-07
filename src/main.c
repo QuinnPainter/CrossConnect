@@ -115,6 +115,9 @@ void main()
 {
     lcd_off(); // Disable screen so we can copy to VRAM freely
 
+    // these "spriteTiles_end - spriteTiles" subtractions happen at runtime instead of compile time
+    // because those assets are in ASM, so the compiler doesn't know the addresses and can't optimise
+    // not sure how to fix this outside of building a whole new asset inclusion system
     memcpy((void*)0x8000, spriteTiles, spriteTiles_end - spriteTiles);
     memcpy((void*)0x8800, backgroundTiles, backgroundTiles_end - backgroundTiles);
     memcpy((void*)0x8900, connectionTiles, connectionTiles_end - connectionTiles);

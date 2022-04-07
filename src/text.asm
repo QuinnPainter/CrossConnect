@@ -40,13 +40,9 @@ CHARMAP " ", $07
 
 SECTION "StringRoutines", ROM0
 
-_copyString::
-    pop de ; DE = Return address
-    pop hl ; HL = Source address
-    pop bc ; BC = Dest address
-    push bc
-    push hl
-    push de
+_copyString:: ; src is DE, dst is BC
+    ld h, d
+    ld l, e ; put src in HL
 .lp:
     ld a, [hli]
     or a
