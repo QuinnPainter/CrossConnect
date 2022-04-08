@@ -1,3 +1,5 @@
+include "sdk/hardware.inc"
+
 NEWCHARMAP MainCharmap
 CHARMAP "A", $20
 CHARMAP "B", "A" + 1
@@ -38,8 +40,7 @@ CHARMAP "9", "8" + 1
 CHARMAP "!", "9" + 1
 CHARMAP " ", $07
 
-SECTION "StringRoutines", ROM0
-
+SECTION "CopyString", ROM0
 _copyString:: ; src is DE, dst is BC
     ld h, d
     ld l, e ; put src in HL
@@ -51,9 +52,32 @@ _copyString:: ; src is DE, dst is BC
     inc bc
     jr .lp
 
+SECTION "CopyStringVRAM", ROM0
+_copyStringVRAM:: ; src is DE, dst is BC
+    ld h, d
+    ld l, e
+.lp:
+    ld a, [hli]
+    or a
+    ret z
+    ld d, a
+:   ldh a, [rSTAT]
+    and a, STATF_BUSY
+    jr nz, :-
+    ld a, d
+    ld [bc], a
+    inc bc
+    jr .lp
+
+
 SECTION "PlayString", ROM0
 _PlayString:: DB "PLAY", 0
 SECTION "StyleString", ROM0
 _StyleString:: DB "STYLE", 0
 SECTION "AboutString", ROM0
 _AboutString:: DB "ABOUT", 0
+
+SECTION "ShapesString", ROM0
+_ShapesString:: DB "SHAPES ", 0
+SECTION "NumbersString", ROM0
+_NumbersString:: DB "NUMBERS", 0

@@ -17,6 +17,13 @@ enum tileTypes {
     DIR_RIGHT = 0b0001,
 };
 
+enum nodeStyles {
+    STYLE_NUMS = 0,
+    STYLE_SHAPES = 1
+};
+
+extern uint8_t nodeStyle;
+
 void runGame();
 void processMove();
 

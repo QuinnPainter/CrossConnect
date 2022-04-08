@@ -8,6 +8,10 @@
 #define BGB_BREAKPOINT() __asm__("ld b, b") // opcode used as breakpoint in BGB
 #define CRASH_POINT() __asm__(" .db #0xDD") // invalid opcode, will lock up the system
 
+// returns the 2's complement negative version of a number.
+// since SDCC is stupid, adding a NEGATEd number is (sometimes) more efficient than subtracting.
+#define NEGATE(x) ((~x)+1)
+
 // Useful for 8.8 fixed point values. Taken from GBDK/types.h
 typedef union _fixed {
   struct {

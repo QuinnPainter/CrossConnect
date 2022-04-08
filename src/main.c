@@ -35,7 +35,15 @@ const uint16_t objpal[8*4] = {
 
 #define MENUCURSOR_X_POS (OAM_X_OFS + (2*8))
 #define MENUCURSOR_BASE_Y (OAM_Y_OFS + (12*8)) // Position of cursor when cursorSelection is 0
-uint8_t cursorSelection = 0; // 0 = Play, 1 = Style, 2 = About
+
+enum mainMenuOptions {
+    MAINMENU_PLAY = 0,
+    MAINMENU_STYLE = 1,
+    MAINMENU_ABOUT = 2
+};
+
+uint8_t cursorSelection = MAINMENU_PLAY;
+uint16_t cursorYPos = MENUCURSOR_BASE_Y;
 
 void genConnectedNodeTiles(uint8_t* startPtr, uint8_t* endPtr, bool useAltColour)
 {
@@ -109,6 +117,18 @@ void setTitleLetterColour(uint16_t addr, uint8_t value)
     vram_set(addr+0x21, value);
     vram_set(addr+0x40, value);
     vram_set(addr+0x41, value);
+}
+
+void drawStyleOption()
+{
+    if (nodeStyle == STYLE_NUMS)
+    {
+        copyStringVRAM(NumbersString, (uint8_t*)0x99AA);
+    }
+    else // nodeStyle == STYLE_SHAPES
+    {
+        copyStringVRAM(ShapesString, (uint8_t*)0x99AA);
+    }
 }
 
 void main()
@@ -220,6 +240,10 @@ void main()
     copyString(StyleString, (uint8_t*)0x99A3);
     copyString(AboutString, (uint8_t*)0x99C3);
 
+    nodeStyle = STYLE_NUMS; // todo: save this in SRAM
+
+    drawStyleOption();
+
     // Setup the OAM for sprite drawing
     oam_init();
 
@@ -244,9 +268,31 @@ void main()
     {
         joypad_update();
 
-        if (joypad_pressed & PAD_START)
+        if ((joypad_pressed & PAD_UP) && cursorSelection > 0) { cursorSelection--; }
+        if ((joypad_pressed & PAD_DOWN) && cursorSelection < 2) { cursorSelection++; }
+        smoothSlide(&cursorYPos, MENUCURSOR_BASE_Y + (cursorSelection * 8));
+        shadow_oam[1].y = cursorYPos >> 8;
+
+        if (joypad_pressed & (PAD_START | PAD_A))
         {
-            runGame();
+            switch (cursorSelection)
+            {
+                case MAINMENU_PLAY:
+                    shadow_oam[1].y = 0; // hide menu cursor
+                    runGame();
+                    break;
+                case MAINMENU_STYLE:
+                    nodeStyle = !nodeStyle;
+                    drawStyleOption();
+                    break;
+                case MAINMENU_ABOUT:
+                    break; // todo
+            }
+        }
+        if ((joypad_pressed & (PAD_LEFT | PAD_RIGHT)) && cursorSelection == MAINMENU_STYLE)
+        {
+            nodeStyle = !nodeStyle;
+            drawStyleOption();
         }
 
         HALT();

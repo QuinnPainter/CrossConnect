@@ -11,12 +11,9 @@
 #include "cursor.h"
 #include "game.h"
 
-#define STYLE_NUMS 0
-#define STYLE_SHAPES 1
-
 #define BOARD_VRAM 0x99CD
 
-uint8_t nodeStyle = 0; // 0 = numbers, 1 = shapes
+uint8_t nodeStyle;
 
 uint8_t cursorXOffset;
 uint8_t cursorYOffset;

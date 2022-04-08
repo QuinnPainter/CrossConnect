@@ -106,7 +106,6 @@ void updateCursorAnimation()
     smoothSlide(&cursorCurX, cursorTargetX);
     smoothSlide(&cursorCurY, cursorTargetY);
 
-    // the lerped position is off by 1 for some reason.
-    shadow_oam[0].y = (cursorCurY >> 8) + 1;
-    shadow_oam[0].x = (cursorCurX >> 8) + 1;
+    shadow_oam[0].y = cursorCurY >> 8;
+    shadow_oam[0].x = cursorCurX >> 8;
 }
