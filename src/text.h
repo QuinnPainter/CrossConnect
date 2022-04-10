@@ -3,11 +3,11 @@
 
 #include <stdint.h>
 
-// Copy a string into RAM (or unlocked VRAM)
-void copyString(uint8_t* src, uint8_t* dst);
-
 // Copy a string into locked VRAM
 void copyStringVRAM(uint8_t* src, uint8_t* dst);
+
+// Copy a string that is multiple lines (only used for the About page)
+void copyFullscreenString(uint8_t* src, uint8_t* dst);
 
 extern const uint8_t PlayString[];
 extern const uint8_t StyleString[];
@@ -15,5 +15,7 @@ extern const uint8_t AboutString[];
 
 extern const uint8_t ShapesString[];
 extern const uint8_t NumbersString[];
+
+extern const uint8_t AboutPageString[];
 
 #endif//TEXT_H

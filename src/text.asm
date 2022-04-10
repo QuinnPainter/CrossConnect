@@ -38,19 +38,10 @@ CHARMAP "7", "6" + 1
 CHARMAP "8", "7" + 1
 CHARMAP "9", "8" + 1
 CHARMAP "!", "9" + 1
-CHARMAP " ", $07
+CHARMAP ".", "!" + 1
+CHARMAP " ", $97 ; Empty space
+CHARMAP "^", $90 ; Grid square
 
-SECTION "CopyString", ROM0
-_copyString:: ; src is DE, dst is BC
-    ld h, d
-    ld l, e ; put src in HL
-.lp:
-    ld a, [hli]
-    or a
-    ret z
-    ld [bc], a
-    inc bc
-    jr .lp
 
 SECTION "CopyStringVRAM", ROM0
 _copyStringVRAM:: ; src is DE, dst is BC
@@ -69,6 +60,25 @@ _copyStringVRAM:: ; src is DE, dst is BC
     inc bc
     jr .lp
 
+SECTION "CopyFullscreenString", ROM0
+_copyFullscreenString:: ; src is DE, dst is BC
+    call _copyStringVRAM
+    ld a, $E0
+    and c           ; return to beginning of line
+    add $20         ; go to next line
+    ld c, a
+    ld a, b
+    adc 0
+    ld b, a
+
+    ld d, h
+    ld e, l
+
+    ld a, [hl]
+    cp 1
+    jr nz, _copyFullscreenString
+    ret
+
 
 SECTION "PlayString", ROM0
 _PlayString:: DB "PLAY", 0
@@ -81,3 +91,22 @@ SECTION "ShapesString", ROM0
 _ShapesString:: DB "SHAPES ", 0
 SECTION "NumbersString", ROM0
 _NumbersString:: DB "NUMBERS", 0
+
+SECTION "AboutPageString", ROM0
+_AboutPageString::
+DB "^CROSSCONNECT V0.1", 0
+DB "^BY QUINN PAINTER", 0
+DB 0
+DB "^MADE WITH GBSDK", 0
+DB 0
+DB "^WITCHFONT8", 0
+DB "^  BY LAVENFURR", 0
+DB 0
+DB 0
+DB 0
+DB 0
+DB 0
+DB 0
+DB 0
+DB 0
+DB "^PRESS B TO RETURN", 0, 1

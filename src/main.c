@@ -131,6 +131,71 @@ void drawStyleOption()
     }
 }
 
+void drawMainMenu()
+{
+    uint16_t dstPtr = 0x9800;
+    const uint8_t* srcPtr = mainMenuTilemap;
+    rVBK = 0; // make sure we're on the tilemap vram bank
+    for (uint8_t y = 0; y < 18; y++)
+    {
+        for (uint8_t x = 0; x < 20; x++)
+        {
+            // this check might not actually be necessary?
+            // since DMG will ignore the rVBK write, 0x7 will get written to tilemap
+            // and immediately get overwritten by the next vram_set
+            if (cpu_type == CPU_CGB)
+            {
+                rVBK = 1; // make sure we're on the attribute vram bank
+                vram_set(dstPtr, 0x7); // fill bg with BG palette 7
+                rVBK = 0;
+            }
+            // 0x10 = tile offset from tilemap
+            vram_set(dstPtr++, (*srcPtr++) + 0x10);
+        }
+        dstPtr += 12;
+    }
+    if (cpu_type == CPU_CGB)
+    {
+        setTitleLetterColour(0x9841, 0);
+        setTitleLetterColour(0x9843, 1);
+        setTitleLetterColour(0x9845, 2);
+        setTitleLetterColour(0x9847, 3);
+        setTitleLetterColour(0x9849, 5);
+    }
+    rSCY = 0;
+    rSCX = 0;
+    rVBK = 0; // switch to bg tilemap bank
+    copyStringVRAM(PlayString, (uint8_t*)0x9983);
+    copyStringVRAM(StyleString, (uint8_t*)0x99A3);
+    copyStringVRAM(AboutString, (uint8_t*)0x99C3);
+
+    drawStyleOption();
+}
+
+void drawAboutScreen()
+{
+    uint16_t dstPtr = 0x9800;
+    for (uint8_t y = 0; y < 18; y++)
+    {
+        for (uint8_t x = 0; x < 20; x++)
+        {
+            // this check might not actually be necessary?
+            // since DMG will ignore the rVBK write, 0x7 will get written to tilemap
+            // and immediately get overwritten by the next vram_set
+            if (cpu_type == CPU_CGB)
+            {
+                rVBK = 1; // make sure we're on the attribute vram bank
+                vram_set(dstPtr, 0x7); // fill bg with BG palette 7
+                rVBK = 0;
+            }
+            // 0x10 = grid tile
+            vram_set(dstPtr++, 0x10);
+        }
+        dstPtr += 12;
+    }
+    copyFullscreenString(AboutPageString, (uint8_t*)0x9820);
+}
+
 void main()
 {
     lcd_off(); // Disable screen so we can copy to VRAM freely
@@ -203,46 +268,8 @@ void main()
         // Generate the "connected" tiles for nodeShapes
         genConnectedNodeTiles((uint8_t*)0x8C00, (uint8_t*)0x8D00, false);
     }
-    memcpy((void*)0x9200, fontTiles, fontTiles_end - fontTiles);
-
-    // Setup main menu graphics
     memcpy((void*)0x9100, mainMenuTiles, mainMenuTiles_end - mainMenuTiles);
-    uint8_t* dstPtr = (uint8_t*)0x9800;
-    const uint8_t* srcPtr = mainMenuTilemap;
-    rVBK = 0; // make sure we're on the tilemap vram bank
-    for (uint8_t y = 0; y < 18; y++)
-    {
-        for (uint8_t x = 0; x < 20; x++)
-        {
-            if (cpu_type == CPU_CGB)
-            {
-                rVBK = 1; // make sure we're on the attribute vram bank
-                *dstPtr = 0x7; // fill bg with BG palette 7
-                rVBK = 0;
-            }
-            // 0x10 = tile offset from tilemap
-            (*dstPtr++) = (*srcPtr++) + 0x10;
-        }
-        dstPtr += 12;
-    }
-    if (cpu_type == CPU_CGB)
-    {
-        setTitleLetterColour(0x9841, 0);
-        setTitleLetterColour(0x9843, 1);
-        setTitleLetterColour(0x9845, 2);
-        setTitleLetterColour(0x9847, 3);
-        setTitleLetterColour(0x9849, 5);
-    }
-    rSCY = 0;
-    rSCX = 0;
-    rVBK = 0; // switch to bg tilemap bank
-    copyString(PlayString, (uint8_t*)0x9983);
-    copyString(StyleString, (uint8_t*)0x99A3);
-    copyString(AboutString, (uint8_t*)0x99C3);
-
-    nodeStyle = STYLE_NUMS; // todo: save this in SRAM
-
-    drawStyleOption();
+    memcpy((void*)0x9200, fontTiles, fontTiles_end - fontTiles);
 
     // Setup the OAM for sprite drawing
     oam_init();
@@ -252,6 +279,9 @@ void main()
     shadow_oam[1].x = MENUCURSOR_X_POS;
     shadow_oam[1].tile = TILE_MENUCURSOR;
     shadow_oam[1].attr = 0x00;
+
+    nodeStyle = STYLE_NUMS; // todo: save this in SRAM
+    drawMainMenu();
 
     // Make sure sprites and the background are drawn (also turns the screen on)
     rLCDC = LCDC_ON | LCDC_OBJON | LCDC_BGON;
@@ -286,7 +316,11 @@ void main()
                     drawStyleOption();
                     break;
                 case MAINMENU_ABOUT:
-                    break; // todo
+                    shadow_oam[1].y = 0; // hide menu cursor
+                    drawAboutScreen();
+                    while (!(joypad_pressed & PAD_B)) { joypad_update(); HALT(); }
+                    drawMainMenu();
+                    break;
             }
         }
         if ((joypad_pressed & (PAD_LEFT | PAD_RIGHT)) && cursorSelection == MAINMENU_STYLE)
