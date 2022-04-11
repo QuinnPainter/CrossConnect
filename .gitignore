@@ -5,3 +5,4 @@ _build
 *.sym
 *.gb.bmp
 *.gbc.bmp
+*.sav
