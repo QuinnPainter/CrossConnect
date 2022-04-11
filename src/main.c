@@ -39,7 +39,8 @@ const uint16_t objpal[8*4] = {
 enum mainMenuOptions {
     MAINMENU_PLAY = 0,
     MAINMENU_STYLE = 1,
-    MAINMENU_ABOUT = 2
+    MAINMENU_HOWTO = 2,
+    MAINMENU_ABOUT = 3
 };
 
 uint8_t cursorSelection = MAINMENU_PLAY;
@@ -167,13 +168,15 @@ void drawMainMenu()
     rVBK = 0; // switch to bg tilemap bank
     copyStringVRAM(PlayString, (uint8_t*)0x9983);
     copyStringVRAM(StyleString, (uint8_t*)0x99A3);
-    copyStringVRAM(AboutString, (uint8_t*)0x99C3);
+    copyStringVRAM(HowToString, (uint8_t*)0x99C3);
+    copyStringVRAM(AboutString, (uint8_t*)0x99E3);
 
     drawStyleOption();
 }
 
-void drawAboutScreen()
+void infoScreenLoop(uint8_t* screenString)
 {
+    shadow_oam[1].y = 0; // hide menu cursor
     uint16_t dstPtr = 0x9800;
     for (uint8_t y = 0; y < 18; y++)
     {
@@ -188,12 +191,26 @@ void drawAboutScreen()
                 vram_set(dstPtr, 0x7); // fill bg with BG palette 7
                 rVBK = 0;
             }
-            // 0x10 = grid tile
-            vram_set(dstPtr++, 0x10);
+            // 0x97 = empty tile
+            vram_set(dstPtr++, 0x97);
         }
         dstPtr += 12;
     }
-    copyFullscreenString(AboutPageString, (uint8_t*)0x9820);
+    // top and bottom borders
+    for (uint16_t i = 0x9800; i < 0x9814; i++)
+    {
+        vram_set(i, 0x10); // 0x10 = grid tile
+        vram_set(i + 0x220, 0x10);
+    }
+    // left and right borders
+    for (uint16_t i = 0x9820; i < 0x9A20; i += 0x20)
+    {
+        vram_set(i, 0x10); // 0x10 = grid tile
+        vram_set(i + 0x13, 0x10);
+    }
+    copyFullscreenString(screenString, (uint8_t*)0x9820);
+
+    while (!(joypad_pressed & PAD_B)) { joypad_update(); HALT(); }
 }
 
 void main()
@@ -299,7 +316,7 @@ void main()
         joypad_update();
 
         if ((joypad_pressed & PAD_UP) && cursorSelection > 0) { cursorSelection--; }
-        if ((joypad_pressed & PAD_DOWN) && cursorSelection < 2) { cursorSelection++; }
+        if ((joypad_pressed & PAD_DOWN) && cursorSelection < 3) { cursorSelection++; }
         smoothSlide(&cursorYPos, MENUCURSOR_BASE_Y + (cursorSelection * 8));
         shadow_oam[1].y = cursorYPos >> 8;
 
@@ -315,10 +332,12 @@ void main()
                     nodeStyle = !nodeStyle;
                     drawStyleOption();
                     break;
+                case MAINMENU_HOWTO:
+                    infoScreenLoop(HowToPageString);
+                    drawMainMenu();
+                    break;
                 case MAINMENU_ABOUT:
-                    shadow_oam[1].y = 0; // hide menu cursor
-                    drawAboutScreen();
-                    while (!(joypad_pressed & PAD_B)) { joypad_update(); HALT(); }
+                    infoScreenLoop(AboutPageString);
                     drawMainMenu();
                     break;
             }

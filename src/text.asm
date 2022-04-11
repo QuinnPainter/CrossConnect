@@ -85,28 +85,49 @@ _PlayString:: DB "PLAY", 0
 SECTION "StyleString", ROM0
 _StyleString:: DB "STYLE", 0
 SECTION "AboutString", ROM0
-_AboutString:: DB "ABOUT", 0
+_AboutString:: DB "CREDITS", 0
 
 SECTION "ShapesString", ROM0
 _ShapesString:: DB "SHAPES ", 0
 SECTION "NumbersString", ROM0
 _NumbersString:: DB "NUMBERS", 0
+SECTION "HowToString", ROM0
+_HowToString:: DB "HOW TO", 0
 
 SECTION "AboutPageString", ROM0
 _AboutPageString::
 DB "^CROSSCONNECT V0.1", 0
 DB "^BY QUINN PAINTER", 0
+DB "^       2022", 0
 DB 0
 DB "^MADE WITH GBSDK", 0
 DB 0
 DB "^WITCHFONT8", 0
-DB "^  BY LAVENFURR", 0
+DB "^BY LAVENFURR", 0
 DB 0
 DB 0
+DB "^CHECK OUT THE", 0
+DB "^GBDEV COMMUNITY!", 0
+DB "^AT GBDEV.IO", 0
 DB 0
 DB 0
+DB "^PRESS B TO RETURN", 0, 1
+
+SECTION "HowToPageString", ROM0
+_HowToPageString::
+DB "^EACH LEVEL IS A", 0
+DB "^GRID WITH SEVERAL", 0
+DB "^PAIRS OF NODES. ", 0
 DB 0
+DB "^YOUR GOAL IS TO", 0
+DB "^CONNECT EACH PAIR", 0
+DB "^AND FILL THE BOARD", 0
 DB 0
+DB "^HOLD A TO DRAW", 0
+DB "^HOLD B TO DELETE", 0
 DB 0
+DB "^DISCONNECTED LINES", 0
+DB "^ARE AUTOMATICALLY", 0
+DB "^DELETED.", 0
 DB 0
 DB "^PRESS B TO RETURN", 0, 1
