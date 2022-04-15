@@ -333,11 +333,7 @@ inline void eraseTileConnections(uint8_t x, uint8_t y)
 
 void runGame()
 {
-    // Setup cursor sprite
-    shadow_oam[0].y = 0x00;
-    shadow_oam[0].x = 0x00;
-    shadow_oam[0].tile = TILE_CURSOR;
-    shadow_oam[0].attr = 0x00;
+    cursorState = CURSOR_STATE_INGAME;
 
     memset(board, BOARD_TILE_FILLED, sizeof(board));
     curLevelPackAddr = testLevels;

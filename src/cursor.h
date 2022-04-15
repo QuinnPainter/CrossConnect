@@ -3,6 +3,13 @@
 
 #include "helpers.h"
 
+enum cursorStates {
+    CURSOR_STATE_MAINMENU,
+    CURSOR_STATE_LVLSELECT,
+    CURSOR_STATE_INGAME
+};
+
+extern uint8_t cursorState;
 extern uint8_t cursorTargetX;
 extern uint8_t cursorTargetY;
 extern uint16_t cursorCurX;

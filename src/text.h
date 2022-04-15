@@ -2,12 +2,16 @@
 #define TEXT_H
 
 #include <stdint.h>
+#include "bcd.h"
 
 // Copy a string into locked VRAM
 void copyStringVRAM(uint8_t* src, uint8_t* dst);
 
 // Copy a string that is multiple lines
 void copyFullscreenString(uint8_t* src, uint8_t* dst);
+
+// Draws a BCD8 number
+void drawBCD8(bcd8 input, uint8_t* dst) __preserves_regs(b, c);
 
 extern const uint8_t PlayString[];
 extern const uint8_t StyleString[];

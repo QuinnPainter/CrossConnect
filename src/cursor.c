@@ -4,9 +4,13 @@
 #include "sdk/joypad.h"
 #include "cursor.h"
 #include "game.h"
+#include "gameassets.h"
+#include "levelselect.h"
+#include "main.h"
 
 #define CURSOR_ANIM_SPEED 8 // number of frames between anim frames
 
+uint8_t cursorState = CURSOR_STATE_MAINMENU;
 uint8_t cursorAnimCtr = CURSOR_ANIM_SPEED;
 uint8_t cursorTargetX = 0;
 uint8_t cursorTargetY = 0;
@@ -37,14 +41,24 @@ void processDpadPress(uint8_t dpadState)
         cursorBoardPrevX = cursorBoardX; cursorBoardPrevY = cursorBoardY;
         if (dpadState & PAD_LEFT) {  cursorBoardX--; cursorMoveDirection = DIR_RIGHT; }
         else if (dpadState & PAD_RIGHT) { cursorBoardX++; cursorMoveDirection = DIR_LEFT; }
-        processMove();
+        switch (cursorState)
+        {
+            case CURSOR_STATE_MAINMENU: mainMenuProcessMove(); break;
+            case CURSOR_STATE_INGAME: processMove(); break;
+            case CURSOR_STATE_LVLSELECT: lvlSelectProcessMove(); break;
+        }
     }
     if (dpadState & (PAD_UP | PAD_DOWN))
     {
         cursorBoardPrevX = cursorBoardX; cursorBoardPrevY = cursorBoardY;
         if (dpadState & PAD_UP) { cursorBoardY--; cursorMoveDirection = DIR_DOWN; }
         else if (dpadState & PAD_DOWN) { cursorBoardY++; cursorMoveDirection = DIR_UP; }
-        processMove();
+        switch (cursorState)
+        {
+            case CURSOR_STATE_MAINMENU: mainMenuProcessMove(); break;
+            case CURSOR_STATE_INGAME: processMove(); break;
+            case CURSOR_STATE_LVLSELECT: lvlSelectProcessMove(); break;
+        }
     }
 }
 
@@ -84,8 +98,7 @@ void updateCursorAnimation()
         {
             // Loop through palettes 0-3 (also sets all other attributes to 0, may want to change)
             uint8_t c = (shadow_oam[0].attr + 1) & 3;
-            shadow_oam[0].attr = c; // game cursor sprite
-            shadow_oam[1].attr = c; // menu cursor sprite
+            shadow_oam[0].attr = c;
             if (c == 3)
             {
                 cursorAnimCtr = CURSOR_ANIM_SPEED * 3; // extend the solid colour frame
@@ -108,4 +121,10 @@ void updateCursorAnimation()
 
     shadow_oam[0].y = cursorCurY >> 8;
     shadow_oam[0].x = cursorCurX >> 8;
+
+    switch (cursorState)
+    {
+        case CURSOR_STATE_INGAME: shadow_oam[0].tile = TILE_CURSOR; break;
+        case CURSOR_STATE_MAINMENU: case CURSOR_STATE_LVLSELECT: shadow_oam[0].tile = TILE_MENUCURSOR; break;
+    }
 }

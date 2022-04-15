@@ -10,7 +10,6 @@ include gbsdk/rules.mk
 # Game fits in 32k, so put everything in ROM0
 LDFLAGS += --tiny
 
-FIXFLAGS += --non-japanese
 FIXFLAGS += --rom-version 0
 FIXFLAGS += --new-licensee HB
 

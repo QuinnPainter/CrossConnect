@@ -79,6 +79,33 @@ _copyFullscreenString:: ; src is DE, dst is BC
     jr nz, _copyFullscreenString
     ret
 
+SECTION "DrawBCD8", ROM0
+_drawBCD8:: ; input num is A, dst is DE
+    ld h, d
+    ld l, e
+    cp a, $10
+    jr c, .skipFirstDigit
+    ld d, a
+    swap a
+    and $0F
+    add "0"
+    ld e, a
+:   ldh a, [rSTAT]
+    and a, STATF_BUSY
+    jr nz, :-
+    ld a, e
+    ld [hli], a
+    ld a, d 
+.skipFirstDigit:
+    and $0F
+    add "0"
+    ld e, a
+:   ldh a, [rSTAT]
+    and a, STATF_BUSY
+    jr nz, :-
+    ld [hl], e
+    ret
+
 
 SECTION "PlayString", ROM0
 _PlayString:: DB "PLAY", 0

@@ -4,10 +4,13 @@
 #include "sdk/system.h"
 #include "sdk/joypad.h"
 #include "sdk/hardware.h"
+#include "helpers.h"
 #include "game.h"
 #include "cursor.h"
 #include "gameassets.h"
 #include "text.h"
+#include "bcd.h"
+#include "levelselect.h"
 
 #define BGCOLOUR PAL24(0xFFFFFF)
 #define GRIDCOLOUR PAL24(0x999999)
@@ -37,14 +40,11 @@ const uint16_t objpal[8*4] = {
 #define MENUCURSOR_BASE_Y (OAM_Y_OFS + (12*8)) // Position of cursor when cursorSelection is 0
 
 enum mainMenuOptions {
-    MAINMENU_PLAY = 0,
-    MAINMENU_STYLE = 1,
-    MAINMENU_HOWTO = 2,
-    MAINMENU_ABOUT = 3
+    MAINMENU_PLAY = 1,
+    MAINMENU_STYLE = 2,
+    MAINMENU_HOWTO = 3,
+    MAINMENU_ABOUT = 4
 };
-
-uint8_t cursorSelection = MAINMENU_PLAY;
-uint16_t cursorYPos = MENUCURSOR_BASE_Y;
 
 void genConnectedNodeTiles(uint8_t* startPtr, uint8_t* endPtr, bool useAltColour)
 {
@@ -176,41 +176,18 @@ void drawMainMenu()
 
 void infoScreenLoop(uint8_t* screenString)
 {
-    shadow_oam[1].y = 0; // hide menu cursor
-    uint16_t dstPtr = 0x9800;
-    for (uint8_t y = 0; y < 18; y++)
-    {
-        for (uint8_t x = 0; x < 20; x++)
-        {
-            // this check might not actually be necessary?
-            // since DMG will ignore the rVBK write, 0x7 will get written to tilemap
-            // and immediately get overwritten by the next vram_set
-            if (cpu_type == CPU_CGB)
-            {
-                rVBK = 1; // make sure we're on the attribute vram bank
-                vram_set(dstPtr, 0x7); // fill bg with BG palette 7
-                rVBK = 0;
-            }
-            // 0x97 = empty tile
-            vram_set(dstPtr++, 0x97);
-        }
-        dstPtr += 12;
-    }
-    // top and bottom borders
-    for (uint16_t i = 0x9800; i < 0x9814; i++)
-    {
-        vram_set(i, 0x10); // 0x10 = grid tile
-        vram_set(i + 0x220, 0x10);
-    }
-    // left and right borders
-    for (uint16_t i = 0x9820; i < 0x9A20; i += 0x20)
-    {
-        vram_set(i, 0x10); // 0x10 = grid tile
-        vram_set(i + 0x13, 0x10);
-    }
+    clearScreenWithBorder();
     copyFullscreenString(screenString, (uint8_t*)0x9820);
 
     while (!(joypad_pressed & PAD_B)) { joypad_update(); HALT(); }
+}
+
+void mainMenuProcessMove()
+{
+    if (cursorBoardY < 1 || cursorBoardY > 4) { cursorBoardY = cursorBoardPrevY; }
+
+    cursorTargetY = MENUCURSOR_BASE_Y + ((cursorBoardY - 1) * 8);
+    cursorTargetX = MENUCURSOR_X_POS;
 }
 
 void main()
@@ -292,10 +269,16 @@ void main()
     oam_init();
 
     // Setup menu cursor sprite
-    shadow_oam[1].y = MENUCURSOR_BASE_Y;
-    shadow_oam[1].x = MENUCURSOR_X_POS;
-    shadow_oam[1].tile = TILE_MENUCURSOR;
-    shadow_oam[1].attr = 0x00;
+    shadow_oam[0].y = MENUCURSOR_BASE_Y;
+    shadow_oam[0].x = MENUCURSOR_X_POS;
+    shadow_oam[0].tile = TILE_MENUCURSOR;
+    shadow_oam[0].attr = 0x00;
+
+    cursorState = CURSOR_STATE_MAINMENU;
+    cursorBoardY = MAINMENU_PLAY;
+
+    // put cursor in right spot
+    mainMenuProcessMove();
 
     nodeStyle = STYLE_NUMS; // todo: save this in SRAM
     drawMainMenu();
@@ -314,19 +297,16 @@ void main()
     while(1)
     {
         joypad_update();
-
-        if ((joypad_pressed & PAD_UP) && cursorSelection > 0) { cursorSelection--; }
-        if ((joypad_pressed & PAD_DOWN) && cursorSelection < 3) { cursorSelection++; }
-        smoothSlide(&cursorYPos, MENUCURSOR_BASE_Y + (cursorSelection * 8));
-        shadow_oam[1].y = cursorYPos >> 8;
+        updateCursorMovement();
 
         if (joypad_pressed & (PAD_START | PAD_A))
         {
-            switch (cursorSelection)
+            switch (cursorBoardY)
             {
                 case MAINMENU_PLAY:
-                    shadow_oam[1].y = 0; // hide menu cursor
-                    runGame();
+                    //runGame();
+                    levelSelectLoop();
+                    drawMainMenu();
                     break;
                 case MAINMENU_STYLE:
                     nodeStyle = !nodeStyle;
@@ -342,7 +322,7 @@ void main()
                     break;
             }
         }
-        if ((joypad_pressed & (PAD_LEFT | PAD_RIGHT)) && cursorSelection == MAINMENU_STYLE)
+        if ((joypad_pressed & (PAD_LEFT | PAD_RIGHT)) && cursorBoardY == MAINMENU_STYLE)
         {
             nodeStyle = !nodeStyle;
             drawStyleOption();

@@ -4,6 +4,7 @@
         "system.h": "c",
         "hardware.h": "c",
         "oam.h": "c",
-        "game.h": "c"
+        "game.h": "c",
+        "interrupt.h": "c"
     }
 }
