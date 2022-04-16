@@ -21,9 +21,9 @@ void smoothSlide(uint16_t* srcCoord, uint8_t targetPos)
 void clearScreenWithBorder()
 {
     uint16_t dstPtr = 0x9800;
-    for (uint8_t y = 0; y < 18; y++)
+    for (uint8_t y = 18; y > 0; y--)
     {
-        for (uint8_t x = 0; x < 20; x++)
+        for (uint8_t x = 20; x > 0; x--)
         {
             // this check might not actually be necessary?
             // since DMG will ignore the rVBK write, 0x7 will get written to tilemap
