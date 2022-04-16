@@ -174,20 +174,24 @@ void drawMainMenu()
     drawStyleOption();
 }
 
-void infoScreenLoop(uint8_t* screenString)
-{
-    clearScreenWithBorder();
-    copyFullscreenString(screenString, (uint8_t*)0x9820);
-
-    while (!(joypad_pressed & PAD_B)) { joypad_update(); HALT(); }
-}
-
 void mainMenuProcessMove()
 {
     if (cursorBoardY < 1 || cursorBoardY > 4) { cursorBoardY = cursorBoardPrevY; }
 
     cursorTargetY = MENUCURSOR_BASE_Y + ((cursorBoardY - 1) * 8);
     cursorTargetX = MENUCURSOR_X_POS;
+}
+
+void infoScreenLoop(uint8_t* screenString)
+{
+    cursorTargetY = 0; // hide cursor
+    cursorCurY = 0;
+    clearScreenWithBorder();
+    copyFullscreenString(screenString, (uint8_t*)0x9820);
+
+    while (!(joypad_pressed & PAD_B)) { joypad_update(); HALT(); }
+    drawMainMenu();
+    mainMenuProcessMove(); // bring back cursor
 }
 
 void main()
@@ -314,11 +318,9 @@ void main()
                     break;
                 case MAINMENU_HOWTO:
                     infoScreenLoop(HowToPageString);
-                    drawMainMenu();
                     break;
                 case MAINMENU_ABOUT:
                     infoScreenLoop(AboutPageString);
-                    drawMainMenu();
                     break;
             }
         }
