@@ -28,7 +28,7 @@ void clearScreenWithBorder()
             // this check might not actually be necessary?
             // since DMG will ignore the rVBK write, 0x7 will get written to tilemap
             // and immediately get overwritten by the next vram_set
-            if (cpu_type == CPU_CGB)
+            //if (cpu_type == CPU_CGB)
             {
                 rVBK = 1; // make sure we're on the attribute vram bank
                 vram_set(dstPtr, 0x7); // fill bg with BG palette 7
@@ -50,5 +50,30 @@ void clearScreenWithBorder()
     {
         vram_set(i, 0x10); // 0x10 = grid tile
         vram_set(i + 0x13, 0x10);
+    }
+}
+
+// Draws a screen-width tilemap, and fills it with palette 0x7 on CGB
+void drawTilemap(uint8_t* dstPtr, uint8_t* srcPtr, uint8_t* srcEnd, uint8_t tileOffset)
+{
+    uint8_t x = 20;
+    while (srcPtr < srcEnd)
+    {
+        // this check might not actually be necessary?
+        // since DMG will ignore the rVBK write, 0x7 will get written to tilemap
+        // and immediately get overwritten by the next vram_set
+        //if (cpu_type == CPU_CGB)
+        {
+            rVBK = 1; // make sure we're on the attribute vram bank
+            vram_set((uint16_t)dstPtr, 0x7); // fill bg with BG palette 7
+            rVBK = 0;
+        }
+        vram_set((uint16_t)dstPtr++, (*srcPtr++) + tileOffset);
+        x--;
+        if (x == 0)
+        {
+            x = 20;
+            dstPtr += 12;
+        }
     }
 }

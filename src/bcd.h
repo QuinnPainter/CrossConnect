@@ -9,4 +9,7 @@ typedef uint8_t bcd8;
 // Increments a BCD8 number
 bcd8 bcd_inc(bcd8 input) __preserves_regs(b, c, d, e, h, l);
 
+// Converts a number from 0-99 to BCD
+bcd8 bcd_conv(uint8_t input) __preserves_regs(b, c, d);
+
 #endif//BCD_H

@@ -79,6 +79,19 @@ _copyFullscreenString:: ; src is DE, dst is BC
     jr nz, _copyFullscreenString
     ret
 
+SECTION "StringLength", ROM0
+_strlength:: ; src is DE
+    ld h, d
+    ld l, e
+    ld d, 0
+.lp:
+    ld a, [hli]
+    or a
+    ld a, d
+    ret z ; output in A
+    inc d
+    jr .lp
+
 SECTION "DrawBCD8", ROM0
 _drawBCD8:: ; input num is A, dst is DE
     ld h, d
@@ -158,6 +171,9 @@ DB "^ARE AUTOMATICALLY", 0
 DB "^DELETED.", 0
 DB 0
 DB "^PRESS B TO RETURN", 0, 1
+
+SECTION "PauseMenuOptionsString", ROM0
+_PauseMenuOptionsString:: DB "RESET  SKIP  MENU", 0
 
 SECTION "LevelpackNameStrings", ROM0
 _TestlevelsName:: DB "TESTLEVELS", 0

@@ -15,9 +15,11 @@
 #define CURSOR_Y_OFFSET ((8 * 5) + OAM_Y_OFS)
 #define RIGHTARROW_POS 0x9952
 #define LEFTARROW_POS 0x9941
+#define LVLPACKNAME_POS 0x9843
 
 uint8_t lvlSelectPage = 0; // Current page within the pack, goes from 0 to 2 (3 pages of 30 levels)
 uint8_t lvlSelectPack = 0; // Index of the current level pack (todo: save these)
+uint8_t lvlSelected;
 
 inline bool atLeftmostPage()
 {
@@ -50,7 +52,7 @@ void drawLevelSelect()
     vram_set(RIGHTARROW_POS, atRightmostPage() ? TILE_BLANK : TILE_RIGHTARROW);
     vram_set(LEFTARROW_POS, atLeftmostPage() ? TILE_BLANK : TILE_LEFTARROW);
 
-    copyStringVRAM(lvlDescArr[(lvlSelectPack * 2) + 1], (uint8_t*)0x9843);
+    copyStringVRAM(lvlDescArr[(lvlSelectPack * 2) + 1], (uint8_t*)LVLPACKNAME_POS);
 
     cursorState = CURSOR_STATE_LVLSELECT;
 }
@@ -69,7 +71,8 @@ void levelSelectLoop()
         if (joypad_pressed & (PAD_START | PAD_A))
         {
             curLevelPackAddr = lvlDescArr[lvlSelectPack * 2];
-            runGame(((cursorBoardY - 1) * 5) + (cursorBoardX - 1) + (lvlSelectPage * 30));
+            lvlSelected = ((cursorBoardY - 1) * 5) + (cursorBoardX - 1) + (lvlSelectPage * 30);
+            runGame();
             drawLevelSelect();
         }
 

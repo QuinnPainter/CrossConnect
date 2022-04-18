@@ -43,6 +43,13 @@ _mainMenuTilemap::
     INCBIN "_build/assets/mainmenu.tilemap"
 _mainMenuTilemap_end::
 
+_ingameMenuTiles::
+    INCBIN "_build/assets/ingamemenu.2bpp"
+_ingameMenuTiles_end::
+_ingameMenuTilemap::
+    INCBIN "_build/assets/ingamemenu.tilemap"
+_ingameMenuTilemap_end::
+
 SECTION "Levels", ROM0
 _testLevels::
     INCBIN "_build/levels/testlevels.bin"

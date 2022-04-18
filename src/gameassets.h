@@ -14,6 +14,9 @@ EXTERN_ASSET(connectionTiles);
 EXTERN_ASSET(mainMenuTiles);
 EXTERN_ASSET(mainMenuTilemap);
 
+EXTERN_ASSET(ingameMenuTiles);
+EXTERN_ASSET(ingameMenuTilemap);
+
 // first const says the pointers are read only, second says the data pointed to is read only
 extern const uint8_t* const lvlDescArr[];
 // each level pack has 90 levels

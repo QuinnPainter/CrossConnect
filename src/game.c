@@ -10,6 +10,8 @@
 #include "levelmngr.h"
 #include "cursor.h"
 #include "game.h"
+#include "ingamemenu.h"
+#include "levelselect.h"
 
 #define BOARD_VRAM 0x99CD
 
@@ -331,12 +333,12 @@ inline void eraseTileConnections(uint8_t x, uint8_t y)
     drawOneTile(x, y);
 }
 
-void runGame(uint8_t levelNum)
+void runGame()
 {
     cursorState = CURSOR_STATE_INGAME;
 
     memset(board, BOARD_TILE_FILLED, sizeof(board));
-    loadLevel(levelNum);
+    loadLevel(lvlSelected);
 
     // set scroll based on level size
     rSCY = (8*14) - (((16 - curLevelHeight) >> 1) * 8);

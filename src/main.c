@@ -134,27 +134,7 @@ void drawStyleOption()
 
 void drawMainMenu()
 {
-    uint16_t dstPtr = 0x9800;
-    const uint8_t* srcPtr = mainMenuTilemap;
-    rVBK = 0; // make sure we're on the tilemap vram bank
-    for (uint8_t y = 18; y > 0; y--)
-    {
-        for (uint8_t x = 20; x > 0; x--)
-        {
-            // this check might not actually be necessary?
-            // since DMG will ignore the rVBK write, 0x7 will get written to tilemap
-            // and immediately get overwritten by the next vram_set
-            if (cpu_type == CPU_CGB)
-            {
-                rVBK = 1; // make sure we're on the attribute vram bank
-                vram_set(dstPtr, 0x7); // fill bg with BG palette 7
-                rVBK = 0;
-            }
-            // 0x10 = tile offset from tilemap
-            vram_set(dstPtr++, (*srcPtr++) + 0x10);
-        }
-        dstPtr += 12;
-    }
+    drawTilemap((uint8_t*)0x9800, mainMenuTilemap, mainMenuTilemap_end, 0x10);
     if (cpu_type == CPU_CGB)
     {
         setTitleLetterColour(0x9841, 0);
@@ -203,6 +183,7 @@ void main()
     // not sure how to fix this outside of building a whole new asset inclusion system
     memcpy((void*)0x8000, spriteTiles, spriteTiles_end - spriteTiles);
     memcpy((void*)0x8800, backgroundTiles, backgroundTiles_end - backgroundTiles);
+    memcpy((void*)0x8890, ingameMenuTiles, ingameMenuTiles_end - ingameMenuTiles);
     memcpy((void*)0x8900, connectionTiles, connectionTiles_end - connectionTiles);
     memcpy((void*)0x8B00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // unconnected
 

@@ -13,6 +13,8 @@ void copyFullscreenString(const uint8_t* src, uint8_t* dst);
 // Draws a BCD8 number
 void drawBCD8(bcd8 input, uint8_t* dst) __preserves_regs(b, c);
 
+uint8_t strlength(const uint8_t* src);
+
 extern const uint8_t PlayString[];
 extern const uint8_t StyleString[];
 extern const uint8_t AboutString[];
@@ -23,6 +25,8 @@ extern const uint8_t HowToString[];
 
 extern const uint8_t AboutPageString[];
 extern const uint8_t HowToPageString[];
+
+extern const uint8_t PauseMenuOptionsString[];
 
 extern const uint8_t Testlevels2Name[];
 extern const uint8_t Testlevels2Name[];
