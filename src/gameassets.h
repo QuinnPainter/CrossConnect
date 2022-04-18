@@ -10,10 +10,21 @@ EXTERN_ASSET(nodeNumberTiles);
 EXTERN_ASSET(nodeNumberTilesCGB);
 EXTERN_ASSET(nodeShapeTiles);
 EXTERN_ASSET(connectionTiles);
-EXTERN_ASSET(testLevels);
 
 EXTERN_ASSET(mainMenuTiles);
 EXTERN_ASSET(mainMenuTilemap);
+
+// first const says the pointers are read only, second says the data pointed to is read only
+extern const uint8_t* const lvlDescArr[];
+// each level pack has 90 levels
+// wish I could think of a better way to do this...
+// I could do something like this:
+//#define NUM_LEVEL_PACKS ((lvlDescArr_end - lvlDescArr) / 4)
+// but then this computation happens at runtime so it's inefficient
+#define NUM_LEVEL_PACKS 2
+
+EXTERN_ASSET(testLevels);
+EXTERN_ASSET(testLevels2);
 
 #define TILE_CURSOR 0x00
 #define TILE_MENUCURSOR 0x01

@@ -331,13 +331,12 @@ inline void eraseTileConnections(uint8_t x, uint8_t y)
     drawOneTile(x, y);
 }
 
-void runGame()
+void runGame(uint8_t levelNum)
 {
     cursorState = CURSOR_STATE_INGAME;
 
     memset(board, BOARD_TILE_FILLED, sizeof(board));
-    curLevelPackAddr = testLevels;
-    loadLevel(2);
+    loadLevel(levelNum);
 
     // set scroll based on level size
     rSCY = (8*14) - (((16 - curLevelHeight) >> 1) * 8);

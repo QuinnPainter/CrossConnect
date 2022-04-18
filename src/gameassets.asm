@@ -43,10 +43,21 @@ _mainMenuTilemap::
     INCBIN "_build/assets/mainmenu.tilemap"
 _mainMenuTilemap_end::
 
-SECTION "Testlevels", ROM0
+SECTION "Levels", ROM0
 _testLevels::
     INCBIN "_build/levels/testlevels.bin"
 _testLevels_end::
+_testLevels2::
+    INCBIN "_build/levels/testlevels2.bin"
+_testLevels2_end::
+
+SECTION "LevelDescriptionArray", ROM0
+_lvlDescArr::
+DW _testLevels
+DW _TestlevelsName
+DW _testLevels2
+DW _Testlevels2Name
+_lvlDescArr_end::
 
 ;ASSET(backgroundTiles, "background.2bpp");
 ;ASSET(cursorTiles, "cursor.2bpp");

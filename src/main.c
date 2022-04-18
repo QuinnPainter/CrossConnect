@@ -308,9 +308,11 @@ void main()
             switch (cursorBoardY)
             {
                 case MAINMENU_PLAY:
-                    //runGame();
                     levelSelectLoop();
                     drawMainMenu();
+                    cursorState = CURSOR_STATE_MAINMENU;
+                    cursorBoardY = MAINMENU_PLAY;
+                    mainMenuProcessMove(); // bring back cursor
                     break;
                 case MAINMENU_STYLE:
                     nodeStyle = !nodeStyle;

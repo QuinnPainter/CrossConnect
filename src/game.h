@@ -24,7 +24,7 @@ enum nodeStyles {
 
 extern uint8_t nodeStyle;
 
-void runGame();
+void runGame(uint8_t levelNum);
 void processMove();
 
 #endif//GAME_H

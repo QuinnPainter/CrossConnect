@@ -158,3 +158,7 @@ DB "^ARE AUTOMATICALLY", 0
 DB "^DELETED.", 0
 DB 0
 DB "^PRESS B TO RETURN", 0, 1
+
+SECTION "LevelpackNameStrings", ROM0
+_TestlevelsName:: DB "TESTLEVELS", 0
+_Testlevels2Name:: DB "TESTLEVELS2", 0
