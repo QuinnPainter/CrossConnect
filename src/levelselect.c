@@ -2,6 +2,7 @@
 #include "sdk/interrupt.h"
 #include "sdk/oam.h"
 #include "sdk/joypad.h"
+#include "sdk/video.h"
 #include "levelselect.h"
 #include "bcd.h"
 #include "text.h"
@@ -12,9 +13,21 @@
 
 #define CURSOR_X_OFFSET ((8 * 2) + OAM_X_OFS)
 #define CURSOR_Y_OFFSET ((8 * 5) + OAM_Y_OFS)
+#define RIGHTARROW_POS 0x9952
+#define LEFTARROW_POS 0x9941
 
 uint8_t lvlSelectPage = 0; // Current page within the pack, goes from 0 to 2 (3 pages of 30 levels)
 uint8_t lvlSelectPack = 0; // Index of the current level pack (todo: save these)
+
+inline bool atLeftmostPage()
+{
+    return (lvlSelectPack == 0) && (lvlSelectPage == 0);
+}
+
+inline bool atRightmostPage()
+{
+    return (lvlSelectPack == NUM_LEVEL_PACKS - 1) && (lvlSelectPage == 2);
+}
 
 void drawLevelSelect()
 {
@@ -33,6 +46,9 @@ void drawLevelSelect()
         // 17 = proceed to next line, 32 = go down another line
         curTilemapAddr += 17 + 32;
     }
+
+    vram_set(RIGHTARROW_POS, atRightmostPage() ? TILE_BLANK : TILE_RIGHTARROW);
+    vram_set(LEFTARROW_POS, atLeftmostPage() ? TILE_BLANK : TILE_LEFTARROW);
 
     copyStringVRAM(lvlDescArr[(lvlSelectPack * 2) + 1], (uint8_t*)0x9843);
 
@@ -69,7 +85,7 @@ void lvlSelectProcessMove()
     }
     if (cursorBoardX > 5)
     {
-        if ((lvlSelectPack == NUM_LEVEL_PACKS - 1) && (lvlSelectPage == 2))
+        if (atRightmostPage())
         {
             // at the right end, so cancel cursor move
             cursorBoardX = cursorBoardPrevX;
@@ -90,7 +106,7 @@ void lvlSelectProcessMove()
     }
     if (cursorBoardX < 1)
     {
-        if ((lvlSelectPack == 0) && (lvlSelectPage == 0))
+        if (atLeftmostPage())
         {
             // at the left end, so cancel cursor move
             cursorBoardX = cursorBoardPrevX;

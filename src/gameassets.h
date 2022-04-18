@@ -43,4 +43,8 @@ EXTERN_ASSET(testLevels2);
 #define TILE_BGLEFT 0x87
 #define TILE_BGRIGHT 0x88
 
+#define TILE_LEFTARROW 0x46
+#define TILE_RIGHTARROW 0x47
+#define TILE_BLANK 0x97
+
 #endif//GAMEASSETS_H
