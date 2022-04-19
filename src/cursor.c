@@ -7,6 +7,7 @@
 #include "gameassets.h"
 #include "levelselect.h"
 #include "main.h"
+#include "ingamemenu.h"
 
 #define CURSOR_ANIM_SPEED 8 // number of frames between anim frames
 
@@ -26,13 +27,20 @@ uint8_t cursorMoveDirection = 0; // Which direction the cursor moved. If 0, did 
 // Delayed Auto-Shift variables
 #define DAS_DELAY 20 // Delay after starting to hold the button before the auto-shift activates
 #define DAS_SPEED 4 // Once activated, this is the delay between each simulated button press
-enum dasStates {
+enum dasStates { // this really doesn't need to be an enum, could just be a bool
     DAS_WAITING, // nothing held / button just started to be held, delaying for a while
     DAS_ACTIVE // active and repeatedly pressing the button
 };
 uint8_t das_state = DAS_WAITING;
 uint8_t das_direction = 0;
 uint8_t das_timer = 0;
+
+void processMove()
+{
+    // https://barrgroup.com/embedded-systems/how-to/c-function-pointers
+    static void (*const processMoveTable[])() = {mainMenuProcessMove, lvlSelectProcessMove, ingameProcessMove, ingameMenuProcessMove};
+    processMoveTable[cursorState]();
+}
 
 void processDpadPress(uint8_t dpadState)
 {
@@ -41,24 +49,14 @@ void processDpadPress(uint8_t dpadState)
         cursorBoardPrevX = cursorBoardX; cursorBoardPrevY = cursorBoardY;
         if (dpadState & PAD_LEFT) {  cursorBoardX--; cursorMoveDirection = DIR_RIGHT; }
         else if (dpadState & PAD_RIGHT) { cursorBoardX++; cursorMoveDirection = DIR_LEFT; }
-        switch (cursorState)
-        {
-            case CURSOR_STATE_MAINMENU: mainMenuProcessMove(); break;
-            case CURSOR_STATE_INGAME: processMove(); break;
-            case CURSOR_STATE_LVLSELECT: lvlSelectProcessMove(); break;
-        }
+        processMove();
     }
     if (dpadState & (PAD_UP | PAD_DOWN))
     {
         cursorBoardPrevX = cursorBoardX; cursorBoardPrevY = cursorBoardY;
         if (dpadState & PAD_UP) { cursorBoardY--; cursorMoveDirection = DIR_DOWN; }
         else if (dpadState & PAD_DOWN) { cursorBoardY++; cursorMoveDirection = DIR_UP; }
-        switch (cursorState)
-        {
-            case CURSOR_STATE_MAINMENU: mainMenuProcessMove(); break;
-            case CURSOR_STATE_INGAME: processMove(); break;
-            case CURSOR_STATE_LVLSELECT: lvlSelectProcessMove(); break;
-        }
+        processMove();
     }
 }
 
@@ -116,8 +114,8 @@ void updateCursorAnimation()
     }
 
     // lerp the cursor position
-    smoothSlide(&cursorCurX, cursorTargetX);
-    smoothSlide(&cursorCurY, cursorTargetY);
+    smoothSlide(&cursorCurX, cursorTargetX, 1);
+    smoothSlide(&cursorCurY, cursorTargetY, 1);
 
     shadow_oam[0].y = cursorCurY >> 8;
     shadow_oam[0].x = cursorCurX >> 8;
@@ -125,6 +123,8 @@ void updateCursorAnimation()
     switch (cursorState)
     {
         case CURSOR_STATE_INGAME: shadow_oam[0].tile = TILE_CURSOR; break;
-        case CURSOR_STATE_MAINMENU: case CURSOR_STATE_LVLSELECT: shadow_oam[0].tile = TILE_MENUCURSOR; break;
+        case CURSOR_STATE_MAINMENU:
+        case CURSOR_STATE_LVLSELECT:
+        case CURSOR_STATE_INGAMEMENU: shadow_oam[0].tile = TILE_MENUCURSOR; break;
     }
 }

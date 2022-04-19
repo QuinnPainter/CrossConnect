@@ -269,7 +269,10 @@ void main()
     drawMainMenu();
 
     // Make sure sprites and the background are drawn (also turns the screen on)
-    rLCDC = LCDC_ON | LCDC_OBJON | LCDC_BGON;
+    // Also sets up the window for the in game menus
+    rLCDC = LCDC_ON | LCDC_OBJON | LCDC_BGON | LCDC_WIN9C00 | LCDC_WINON;
+    rWY = 0xFF; // hide window
+    rWX = 7; // far left
 
     // Setup the VBLANK interrupt.
     rIF = 0;

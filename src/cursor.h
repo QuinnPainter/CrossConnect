@@ -4,9 +4,10 @@
 #include "helpers.h"
 
 enum cursorStates {
-    CURSOR_STATE_MAINMENU,
-    CURSOR_STATE_LVLSELECT,
-    CURSOR_STATE_INGAME
+    CURSOR_STATE_MAINMENU = 0,
+    CURSOR_STATE_LVLSELECT = 1,
+    CURSOR_STATE_INGAME = 2,
+    CURSOR_STATE_INGAMEMENU = 3
 };
 
 extern uint8_t cursorState;

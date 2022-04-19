@@ -24,7 +24,7 @@ typedef union _fixed {
 inline void mbc5_sram_enable() { *((uint8_t*)0x0000) = 0x0A; }
 inline void mbc5_sram_disable() { *((uint8_t*)0x0000) = 0x00; }
 
-void smoothSlide(uint16_t* srcCoord, uint8_t targetPos);
+void smoothSlide(uint16_t* srcCoord, uint8_t targetPos, uint8_t speed);
 void clearScreenWithBorder();
 void drawTilemap(uint8_t* dstPtr, uint8_t* srcPtr, uint8_t* srcEnd, uint8_t tileOffset);
 

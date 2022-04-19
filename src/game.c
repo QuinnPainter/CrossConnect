@@ -395,13 +395,18 @@ void runGame()
             // Erase the current tile
             eraseTileConnections(cursorBoardX, cursorBoardY);
         }
+        if (joypad_pressed & PAD_START)
+        {
+            pauseMenuLoop();
+            cursorState = CURSOR_STATE_INGAME;
+        }
 
         //Wait for VBLANK
         HALT();
     }
 }
 
-void processMove()
+void ingameProcessMove()
 {
     if (board[cursorBoardY][cursorBoardX] == BOARD_TILE_FILLED)
     {

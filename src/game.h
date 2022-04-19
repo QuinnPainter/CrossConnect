@@ -25,6 +25,6 @@ enum nodeStyles {
 extern uint8_t nodeStyle;
 
 void runGame();
-void processMove();
+void ingameProcessMove();
 
 #endif//GAME_H
