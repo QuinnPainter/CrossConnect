@@ -6,7 +6,10 @@
         {
             "label": "Build",
             "type": "shell",
-            "command": "wsl make",
+            "command": "make",
+            "windows": {
+                "command": "wsl make"
+            },
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -16,7 +19,10 @@
         {
             "label": "Clean",
             "type": "shell",
-            "command": "wsl make clean",
+            "command": "make clean",
+            "windows": {
+                "command": "wsl make clean"
+            },
             "group": "none"
         }
     ]
