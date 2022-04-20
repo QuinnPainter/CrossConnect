@@ -397,7 +397,8 @@ void runGame()
         }
         if (joypad_pressed & PAD_START)
         {
-            ingameMenuLoop(false);
+            isWinMenu = false;
+            ingameMenuLoop();
         }
 
         //Wait for VBLANK
@@ -432,8 +433,8 @@ void ingameProcessMove()
 
                 if (checkGameWon())
                 {
-                    //todo: game winning
-                    BGB_BREAKPOINT();
+                    isWinMenu = true;
+                    ingameMenuLoop();
                 }
             }
             else // if paint is not valid, don't move the cursor

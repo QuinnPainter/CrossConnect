@@ -17,6 +17,18 @@
 
 #define MENU_CURSOR_Y (OAM_Y_OFS + 128)
 
+// why is a cast to uint8_t necessary here??? stupid sdcc and your "overflow in implicit constant conversion"
+const uint8_t cursorXPositions[] = {OAM_X_OFS + 8, OAM_X_OFS + 64, (uint8_t)(OAM_X_OFS + 112), OAM_X_OFS + 32, OAM_X_OFS + 80};
+
+enum ingameMenuOptions {
+    PAUSEMENU_RESET = 1,
+    PAUSEMENU_SKIP = 2,
+    PAUSEMENU_MENU = 3,
+    WINMENU_NEXT = 4,
+    WINMENU_MENU = 5
+};
+
+bool isWinMenu;
 uint16_t winYPos;
 
 void drawPauseMenu()
@@ -35,7 +47,7 @@ void drawWinMenu()
     copyStringVRAM(WinMenuOptionsString, (uint8_t*)0x9C65);
 }
 
-void ingameMenuLoop(bool isWinMenu)
+void ingameMenuLoop()
 {
     if (isWinMenu) { drawWinMenu(); }
     else { drawPauseMenu(); }
@@ -44,6 +56,8 @@ void ingameMenuLoop(bool isWinMenu)
     uint8_t prevCursorX = cursorBoardX;
     uint8_t prevCursorY = cursorBoardY;
     cursorTargetY = (uint8_t)MENU_CURSOR_Y;
+    cursorBoardX = isWinMenu ? WINMENU_NEXT : PAUSEMENU_RESET;
+    ingameMenuProcessMove();
 
     winYPos = (uint16_t)WINDOW_HIDDEN_Y << 8;
     while (rWY != WINDOW_SHOWN_Y)
@@ -57,9 +71,20 @@ void ingameMenuLoop(bool isWinMenu)
         joypad_update();
         updateCursorMovement();
 
-        if (joypad_pressed & PAD_START)
+        if ((joypad_pressed & PAD_START) && !isWinMenu)
         {
             break;
+        }
+        if (joypad_pressed & PAD_A)
+        {
+            switch (cursorBoardX)
+            {
+                case PAUSEMENU_RESET: break;
+                case PAUSEMENU_SKIP:
+                case WINMENU_NEXT: break;
+                case PAUSEMENU_MENU:
+                case WINMENU_MENU: break;
+            }
         }
         HALT();
     }
@@ -76,4 +101,22 @@ void ingameMenuLoop(bool isWinMenu)
 }
 
 void ingameMenuProcessMove()
-{}
+{
+    if (isWinMenu)
+    {
+        if (cursorBoardX > WINMENU_MENU || cursorBoardX < WINMENU_NEXT)
+        {
+            // using a goto here is more efficient than just putting another "cursorBoardX = cursorBoardPrevX";
+            goto RESET_X;
+        }
+    }
+    else
+    {
+        if (cursorBoardX > PAUSEMENU_MENU || cursorBoardX < PAUSEMENU_RESET)
+        {
+RESET_X:
+            cursorBoardX = cursorBoardPrevX;
+        }
+    }
+    cursorTargetX = cursorXPositions[cursorBoardX - 1];
+}

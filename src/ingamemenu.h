@@ -3,9 +3,11 @@
 
 #include "helpers.h"
 
+extern bool isWinMenu;
+
 void drawPauseMenu();
 void drawWinMenu();
-void ingameMenuLoop(bool isWinMenu);
+void ingameMenuLoop();
 void ingameMenuProcessMove();
 
 #endif
