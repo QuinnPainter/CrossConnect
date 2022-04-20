@@ -26,5 +26,6 @@ extern uint8_t nodeStyle;
 
 void runGame();
 void ingameProcessMove();
+void ingameUpdateCursorPosition();
 
 #endif//GAME_H

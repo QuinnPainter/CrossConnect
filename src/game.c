@@ -397,8 +397,7 @@ void runGame()
         }
         if (joypad_pressed & PAD_START)
         {
-            pauseMenuLoop();
-            cursorState = CURSOR_STATE_INGAME;
+            ingameMenuLoop(false);
         }
 
         //Wait for VBLANK
@@ -446,6 +445,11 @@ void ingameProcessMove()
         }
     }
 
+    ingameUpdateCursorPosition();
+}
+
+void ingameUpdateCursorPosition()
+{
     // Screen to OAM coordinates
     cursorTargetY = (cursorBoardY * 8) + cursorYOffset;
     cursorTargetX = (cursorBoardX * 8) + cursorXOffset;

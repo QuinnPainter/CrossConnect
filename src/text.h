@@ -27,6 +27,8 @@ extern const uint8_t AboutPageString[];
 extern const uint8_t HowToPageString[];
 
 extern const uint8_t PauseMenuOptionsString[];
+extern const uint8_t WinMenuOptionsString[];
+extern const uint8_t GameWinString[];
 
 extern const uint8_t Testlevels2Name[];
 extern const uint8_t Testlevels2Name[];

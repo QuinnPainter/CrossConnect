@@ -175,6 +175,12 @@ DB "^PRESS B TO RETURN", 0, 1
 SECTION "PauseMenuOptionsString", ROM0
 _PauseMenuOptionsString:: DB "RESET  SKIP  MENU", 0
 
+SECTION "WinMenuOptionsString", ROM0
+_WinMenuOptionsString:: DB "NEXT  MENU", 0
+
+SECTION "GameWinString", ROM0
+_GameWinString:: DB "SOLVED!", 0
+
 SECTION "LevelpackNameStrings", ROM0
 _TestlevelsName:: DB "TESTLEVELS", 0
 _Testlevels2Name:: DB "TESTLEVELS2", 0

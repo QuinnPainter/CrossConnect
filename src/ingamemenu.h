@@ -4,7 +4,8 @@
 #include "helpers.h"
 
 void drawPauseMenu();
-void pauseMenuLoop();
+void drawWinMenu();
+void ingameMenuLoop(bool isWinMenu);
 void ingameMenuProcessMove();
 
 #endif
