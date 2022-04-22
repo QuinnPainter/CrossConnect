@@ -120,11 +120,5 @@ void updateCursorAnimation()
     shadow_oam[0].y = cursorCurY >> 8;
     shadow_oam[0].x = cursorCurX >> 8;
 
-    switch (cursorState)
-    {
-        case CURSOR_STATE_INGAME: shadow_oam[0].tile = TILE_CURSOR; break;
-        case CURSOR_STATE_MAINMENU:
-        case CURSOR_STATE_LVLSELECT:
-        case CURSOR_STATE_INGAMEMENU: shadow_oam[0].tile = TILE_MENUCURSOR; break;
-    }
+    shadow_oam[0].tile = cursorState == CURSOR_STATE_INGAME ? TILE_CURSOR : TILE_MENUCURSOR;
 }

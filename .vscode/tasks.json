@@ -23,7 +23,8 @@
             "windows": {
                 "command": "wsl make clean"
             },
-            "group": "none"
+            "group": "none",
+            "problemMatcher": []
         }
     ]
 }
