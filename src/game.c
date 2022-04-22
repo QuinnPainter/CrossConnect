@@ -268,7 +268,7 @@ void paintConnection(uint8_t x, uint8_t y, uint8_t direction)
 {
     if ((board[y][x] & 0x0F) == BOARD_TILE_NODE)
     {
-        board[y][x] &= (direction ^ 0xFF);
+        board[y][x] &= ~direction;
     }
     else
     {
@@ -286,10 +286,10 @@ void eraseConnection(uint8_t x, uint8_t y, uint8_t direction)
         case BOARD_TILE_NODE_LEFT:
         case BOARD_TILE_NODE_BOTTOM:
         case BOARD_TILE_NODE_TOP:
+        case BOARD_TILE_NODE:
             // If direction matches the node direction, it will become an unconnected node
             // otherwise, nothing will change
             board[y][x] |= direction;
-        case BOARD_TILE_NODE: // do nothing
             break;
         default: // must be connection (or empty / wall)
             // don't redraw walls (so it doesn't screw up the borders)
@@ -324,8 +324,8 @@ inline void eraseTileConnections(uint8_t x, uint8_t y)
         case BOARD_TILE_NODE_LEFT:
         case BOARD_TILE_NODE_BOTTOM:
         case BOARD_TILE_NODE_TOP:
-            board[y][x] |= 0x0F;
         case BOARD_TILE_NODE:
+            board[y][x] |= 0x0F;
             break;
         default: // must be connection (or empty)
             board[y][x] = BOARD_TILE_EMPTY;
