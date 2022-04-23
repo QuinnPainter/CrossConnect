@@ -316,9 +316,11 @@ void eraseConnection(uint8_t x, uint8_t y, uint8_t direction)
 }
 
 // Erase all connections for a given tile
-inline void eraseTileConnections(uint8_t x, uint8_t y)
+void eraseTileConnections(uint8_t x, uint8_t y)
 {
-    switch (board[y][x] & 0x0F)
+    uint8_t boardTile = board[y][x];
+    if (boardTile == BOARD_TILE_FILLED) { return; }
+    switch (boardTile & 0x0F)
     {
         case BOARD_TILE_NODE_RIGHT:
         case BOARD_TILE_NODE_LEFT:
@@ -333,7 +335,19 @@ inline void eraseTileConnections(uint8_t x, uint8_t y)
     drawOneTile(x, y);
 }
 
-void runGame()
+// Remove all connections on the board. Used when selecting "Reset" in the pause menu.
+void eraseAllConnections()
+{
+    for (uint8_t y = 0; y < 18; y++)
+    {
+        for (uint8_t x = 0; x < 18; x++)
+        {
+            eraseTileConnections(x, y);
+        }
+    }
+}
+
+void startGame()
 {
     cursorState = CURSOR_STATE_INGAME;
 
@@ -375,10 +389,15 @@ void runGame()
             if (board[cursorBoardY][cursorBoardX] != BOARD_TILE_FILLED) { goto DONE_PLACE_CURSOR; }
         }
     }
-    DONE_PLACE_CURSOR:
+DONE_PLACE_CURSOR:
     // Screen to OAM coordinates
     cursorTargetY = (cursorBoardY * 8) + cursorYOffset;
     cursorTargetX = (cursorBoardX * 8) + cursorXOffset;
+}
+
+void runGame()
+{
+    startGame();
 
     while(1)
     {
@@ -398,7 +417,32 @@ void runGame()
         if (joypad_pressed & PAD_START)
         {
             isWinMenu = false;
-            ingameMenuLoop();
+            goto OPEN_MENU;
+        }
+        if (checkGameWon())
+        {
+            isWinMenu = true;
+OPEN_MENU:
+            switch(ingameMenuLoop())
+            {
+                case INGAMEMENU_RESULT_NEXT:
+                    lvlSelected++;
+                    // Go to the next pack if at the end of this one
+                    if (lvlSelected == 90)
+                    {
+                        lvlSelected = 0;
+                        // If at last level of the game, return to menu
+                        if (lvlSelectPack == NUM_LEVEL_PACKS - 1)
+                        {
+                            return;
+                        }
+                        lvlSelectPack++;
+                        curLevelPackAddr = lvlDescArr[lvlSelectPack * 2];
+                    }
+                    startGame();
+                    break;
+                case INGAMEMENU_RESULT_MENU: return;
+            }
         }
 
         //Wait for VBLANK
@@ -430,12 +474,6 @@ void ingameProcessMove()
                 paintConnection(cursorBoardX, cursorBoardY, cursorMoveDirection);
                 // paint previous tile
                 paintConnection(cursorBoardPrevX, cursorBoardPrevY, invertDirection(cursorMoveDirection));
-
-                if (checkGameWon())
-                {
-                    isWinMenu = true;
-                    ingameMenuLoop();
-                }
             }
             else // if paint is not valid, don't move the cursor
             {   // todo : sound effect for this?

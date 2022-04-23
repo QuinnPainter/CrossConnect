@@ -73,7 +73,7 @@ void levelSelectLoop()
             curLevelPackAddr = lvlDescArr[lvlSelectPack * 2];
             lvlSelected = ((cursorBoardY - 1) * 5) + (cursorBoardX - 1) + (lvlSelectPage * 30);
             runGame();
-            drawLevelSelect();
+            return;
         }
 
         HALT();
@@ -118,7 +118,7 @@ void lvlSelectProcessMove()
         {
             // switch pages left
             lvlSelectPage--;
-            if (lvlSelectPage == 0xFF) // wrapped from 0
+            if ((int8_t)lvlSelectPage < 0)
             {
                 lvlSelectPage = 2;
                 lvlSelectPack--;

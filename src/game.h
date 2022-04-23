@@ -24,6 +24,7 @@ enum nodeStyles {
 
 extern uint8_t nodeStyle;
 
+void eraseAllConnections();
 void runGame();
 void ingameProcessMove();
 void ingameUpdateCursorPosition();

@@ -3,11 +3,17 @@
 
 #include "helpers.h"
 
+enum ingameMenuResults {
+    INGAMEMENU_RESULT_NEXT = 0,
+    INGAMEMENU_RESULT_MENU,
+    INGAMEMENU_RESULT_DONOTHING,
+}; 
+
 extern bool isWinMenu;
 
 void drawPauseMenu();
 void drawWinMenu();
-void ingameMenuLoop();
+uint8_t ingameMenuLoop();
 void ingameMenuProcessMove();
 
 #endif

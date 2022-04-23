@@ -47,7 +47,7 @@ void drawWinMenu()
     copyStringVRAM(WinMenuOptionsString, (uint8_t*)0x9C65);
 }
 
-void ingameMenuLoop()
+uint8_t ingameMenuLoop()
 {
     if (isWinMenu) { drawWinMenu(); }
     else { drawPauseMenu(); }
@@ -71,7 +71,7 @@ void ingameMenuLoop()
         joypad_update();
         updateCursorMovement();
 
-        if ((joypad_pressed & PAD_START) && !isWinMenu)
+        if ((joypad_pressed & (PAD_START | PAD_B)) && !isWinMenu)
         {
             break;
         }
@@ -79,15 +79,16 @@ void ingameMenuLoop()
         {
             switch (cursorBoardX)
             {
-                case PAUSEMENU_RESET: break;
+                case PAUSEMENU_RESET: eraseAllConnections(); goto DONE_LOOP;
                 case PAUSEMENU_SKIP:
-                case WINMENU_NEXT: break;
+                case WINMENU_NEXT: rWY = WINDOW_HIDDEN_Y; return INGAMEMENU_RESULT_NEXT;
                 case PAUSEMENU_MENU:
-                case WINMENU_MENU: break;
+                case WINMENU_MENU: rWY = WINDOW_HIDDEN_Y; return INGAMEMENU_RESULT_MENU;
             }
         }
         HALT();
     }
+DONE_LOOP:
     cursorBoardX = prevCursorX;
     cursorBoardY = prevCursorY;
     ingameUpdateCursorPosition();
@@ -98,6 +99,7 @@ void ingameMenuLoop()
         rWY = winYPos >> 8;
         HALT();
     }
+    return INGAMEMENU_RESULT_DONOTHING;
 }
 
 void ingameMenuProcessMove()
