@@ -12,6 +12,7 @@
 #include "bcd.h"
 #include "levelselect.h"
 #include "gbdecompress.h"
+#include "savegame.h"
 
 #define BGCOLOUR PAL24(0xFFFFFF)
 #define GRIDCOLOUR PAL24(0x999999)
@@ -177,6 +178,7 @@ void infoScreenLoop(uint8_t* screenString)
 
 void main()
 {
+    loadSaveGame();
     lcd_off(); // Disable screen so we can copy to VRAM freely
 
     gb_decompress(spriteTiles, (uint8_t*)0x8000);
@@ -264,7 +266,6 @@ void main()
     // put cursor in right spot
     mainMenuProcessMove();
 
-    nodeStyle = STYLE_NUMS; // todo: save this in SRAM
     drawMainMenu();
 
     // Make sure sprites and the background are drawn (also turns the screen on)
@@ -298,9 +299,7 @@ void main()
                     mainMenuProcessMove(); // bring back cursor
                     break;
                 case MAINMENU_STYLE:
-                    nodeStyle = !nodeStyle;
-                    drawStyleOption();
-                    break;
+                    goto SWITCH_STYLE;
                 case MAINMENU_HOWTO:
                     infoScreenLoop(HowToPageString);
                     break;
@@ -311,7 +310,9 @@ void main()
         }
         if ((joypad_pressed & (PAD_LEFT | PAD_RIGHT)) && cursorBoardY == MAINMENU_STYLE)
         {
+SWITCH_STYLE:
             nodeStyle = !nodeStyle;
+            saveGame();
             drawStyleOption();
         }
 

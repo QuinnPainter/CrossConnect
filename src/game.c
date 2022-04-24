@@ -12,10 +12,9 @@
 #include "game.h"
 #include "ingamemenu.h"
 #include "levelselect.h"
+#include "savegame.h"
 
 #define BOARD_VRAM 0x99CD
-
-uint8_t nodeStyle;
 
 uint8_t cursorXOffset;
 uint8_t cursorYOffset;

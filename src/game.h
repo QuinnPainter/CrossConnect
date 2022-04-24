@@ -22,8 +22,6 @@ enum nodeStyles {
     STYLE_SHAPES = 1
 };
 
-extern uint8_t nodeStyle;
-
 void eraseAllConnections();
 void runGame();
 void ingameProcessMove();
