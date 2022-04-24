@@ -5,18 +5,13 @@
 SECTION "gb_decompress", ROM0
 
 _gb_decompress::
-        ld      hl, sp+5
-        ld      a,[hl-]
-        ld      d,a
-        ld      a,[hl-]
-        ld      e,a
-        ld      a,[hl-]
-        ld      l,[hl]
-        ld      h,a
+        ld h, d
+        ld l, e
+        ld d, b
+        ld e, c
 
 ; hl = source; de = dest
 gb_decompress::
-        push    bc
         push    de
 .1:
         ld      a,[hl+] ; load command
@@ -95,10 +90,9 @@ gb_decompress::
         pop     hl
         ld      a, e
         sub     l
-        ld      e, a
+        ld      c, a
         ld      a, d
         sbc     h
-        ld      d, a
-        pop     bc
+        ld      b, a
         
-        ret
+        ret ; return value in bc
