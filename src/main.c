@@ -11,6 +11,7 @@
 #include "text.h"
 #include "bcd.h"
 #include "levelselect.h"
+#include "gbdecompress.h"
 
 #define BGCOLOUR PAL24(0xFFFFFF)
 #define GRIDCOLOUR PAL24(0x999999)
@@ -178,18 +179,14 @@ void main()
 {
     lcd_off(); // Disable screen so we can copy to VRAM freely
 
-    // these "spriteTiles_end - spriteTiles" subtractions happen at runtime instead of compile time
-    // because those assets are in ASM, so the compiler doesn't know the addresses and can't optimise
-    // not sure how to fix this outside of building a whole new asset inclusion system
-    loadAllTiles();
-    //memcpy((void*)0x8000, spriteTiles, spriteTiles_end - spriteTiles);
-    //memcpy((void*)0x8800, backgroundTiles, backgroundTiles_end - backgroundTiles);
-    memcpy((void*)0x8890, ingameMenuTiles, ingameMenuTiles_end - ingameMenuTiles);
-    memcpy((void*)0x8900, connectionTiles, connectionTiles_end - connectionTiles);
-    memcpy((void*)0x8B00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // unconnected
+    gb_decompress(spriteTiles, (uint8_t*)0x8000);
+    gb_decompress(backgroundTiles, (uint8_t*)0x8800);
+    gb_decompress(ingameMenuTiles, (uint8_t*)0x8890);
+    gb_decompress(connectionTiles, (uint8_t*)0x8900);
+    gb_decompress(nodeShapeTiles, (uint8_t*)0x8B00); // unconnected
 
-    memcpy((void*)0x9100, mainMenuTiles, mainMenuTiles_end - mainMenuTiles);
-    memcpy((void*)0x9200, fontTiles, fontTiles_end - fontTiles);
+    gb_decompress(mainMenuTiles, (uint8_t*)0x9100);
+    gb_decompress(fontTiles, (uint8_t*)0x9200);
 
     // Setup VRAM for CGB
     if (cpu_type == CPU_CGB)
@@ -197,13 +194,13 @@ void main()
         cgb_background_palette(bgpal);
         cgb_object_palette(objpal);
 
-        memcpy((void*)0x8A00, nodeNumberTilesCGB, nodeNumberTilesCGB_end - nodeNumberTilesCGB);
+        gb_decompress(nodeNumberTilesCGB, (uint8_t*)0x8A00);
 
         // Copy in the tiles for the alternate colour connections
-        memcpy((void*)0x9000, (void*)0x8900, connectionTiles_end - connectionTiles);
+        memcpy((void*)0x9000, (void*)0x8900, 16 * 14);
 
         // Convert the colours for the alternate colour connections
-        for (uint8_t* i = (uint8_t*)0x9000; i < (uint8_t*)(0x9000 + (connectionTiles_end - connectionTiles)); i += 2)
+        for (uint8_t* i = (uint8_t*)0x9000; i < (uint8_t*)(0x9000 + 16 * 13); i += 2)
         {
             for (uint8_t a = 1; a != 0; a <<= 1)
             {
@@ -226,10 +223,10 @@ void main()
             }
         }
 
-        memcpy((void*)0x8C00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // top
-        memcpy((void*)0x8D00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // bottom
-        memcpy((void*)0x8E00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // left
-        memcpy((void*)0x8F00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // right
+        memcpy((void*)0x8C00, (void*)0x8B00, 16 * 16); // top
+        memcpy((void*)0x8D00, (void*)0x8B00, 16 * 16); // bottom
+        memcpy((void*)0x8E00, (void*)0x8B00, 16 * 16); // left
+        memcpy((void*)0x8F00, (void*)0x8B00, 16 * 16); // right
 
         // Generate the "connected" tiles for nodeShapes
         genConnectedNodeTiles((uint8_t*)0x8C00, (uint8_t*)0x8C80, false);
@@ -241,12 +238,12 @@ void main()
         rOBP0 = 0b11100100;
         rOBP1 = 0b11100100;
 
-        memcpy((void*)0x8A00, nodeNumberTiles, nodeNumberTiles_end - nodeNumberTiles);
+        gb_decompress(nodeNumberTiles, (uint8_t*)0x8A00);
 
-        memcpy((void*)0x8C00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // top
-        memcpy((void*)0x8D00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // bottom
-        memcpy((void*)0x8E00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // left
-        memcpy((void*)0x8F00, (void*)0x8B00, nodeShapeTiles_end - nodeShapeTiles); // right
+        memcpy((void*)0x8C00, (void*)0x8B00, 16 * 16); // top
+        memcpy((void*)0x8D00, (void*)0x8B00, 16 * 16); // bottom
+        memcpy((void*)0x8E00, (void*)0x8B00, 16 * 16); // left
+        memcpy((void*)0x8F00, (void*)0x8B00, 16 * 16); // right
 
         // Generate the "connected" tiles for nodeShapes
         genConnectedNodeTiles((uint8_t*)0x8C00, (uint8_t*)0x8D00, false);

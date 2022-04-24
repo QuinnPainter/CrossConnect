@@ -15,36 +15,36 @@
 SECTION "GraphicAssets", ROM0
 
 _fontTiles::
-    INCBIN "_build/assets/font.2bpp"
+    INCBIN "_build/assets/font.gbcompress"
 _fontTiles_end::
 _backgroundTiles::
-    INCBIN "_build/assets/background.pb16"
+    INCBIN "_build/assets/background.gbcompress"
 _backgroundTiles_end::
 _spriteTiles::
-    INCBIN "_build/assets/sprites.pb16"
+    INCBIN "_build/assets/sprites.gbcompress"
 _spriteTiles_end::
 _nodeNumberTiles::
-    INCBIN "_build/assets/nodeNumbers.2bpp"
+    INCBIN "_build/assets/nodeNumbers.gbcompress"
 _nodeNumberTiles_end::
 _nodeNumberTilesCGB::
-    INCBIN "_build/assets/nodeNumbersCGB.2bpp"
+    INCBIN "_build/assets/nodeNumbersCGB.gbcompress"
 _nodeNumberTilesCGB_end::
 _nodeShapeTiles::
-    INCBIN "_build/assets/nodeShapes.2bpp"
+    INCBIN "_build/assets/nodeShapes.gbcompress"
 _nodeShapeTiles_end::
 _connectionTiles::
-    INCBIN "_build/assets/connections.2bpp"
+    INCBIN "_build/assets/connections.gbcompress"
 _connectionTiles_end::
 
 _mainMenuTiles::
-    INCBIN "_build/assets/mainmenu.2bpp"
+    INCBIN "_build/assets/mainmenu.gbcompress"
 _mainMenuTiles_end::
 _mainMenuTilemap::
     INCBIN "_build/assets/mainmenu.tilemap"
 _mainMenuTilemap_end::
 
 _ingameMenuTiles::
-    INCBIN "_build/assets/ingamemenu.2bpp"
+    INCBIN "_build/assets/ingamemenu.gbcompress"
 _ingameMenuTiles_end::
 _ingameMenuTilemap::
     INCBIN "_build/assets/ingamemenu.tilemap"
@@ -65,28 +65,6 @@ DW _TestlevelsName
 DW _testLevels2
 DW _Testlevels2Name
 _lvlDescArr_end::
-
-SECTION "LoadAllTilesFunction", ROM0
-; Decompresses and loads all tile data into VRAM
-; Assumes the screen is disabled so we can write freely to VRAM
-_loadAllTiles::
-    ld de, _spriteTiles
-    ld hl, $8000
-    ld b, 2;((_spriteTiles_end - _spriteTiles) / 2)
-    call pb16_unpack_block
-    ld de, _backgroundTiles
-    ld hl, $8800
-    ld b, 9;((_backgroundTiles_end - _backgroundTiles) / 2)
-    call pb16_unpack_block
-    ret
-
-;   memcpy((void*)0x8800, backgroundTiles, backgroundTiles_end - backgroundTiles);
-;   memcpy((void*)0x8890, ingameMenuTiles, ingameMenuTiles_end - ingameMenuTiles);
-;   memcpy((void*)0x8900, connectionTiles, connectionTiles_end - connectionTiles);
-;   memcpy((void*)0x8B00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // unconnected
-;   
-;   memcpy((void*)0x9100, mainMenuTiles, mainMenuTiles_end - mainMenuTiles);
-;   memcpy((void*)0x9200, fontTiles, fontTiles_end - fontTiles);
 
 ;ASSET(backgroundTiles, "background.2bpp");
 ;ASSET(cursorTiles, "cursor.2bpp");

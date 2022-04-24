@@ -13,6 +13,11 @@ LDFLAGS += --tiny
 FIXFLAGS += --rom-version 0
 FIXFLAGS += --new-licensee HB
 
+tools/gbcompress/gbcompress:
+	@echo Building gbcompress
+	@mkdir -p $(dir $@)
+	@$(MAKE) -C tools/gbcompress
+
 # Convert levels
 $(BUILD)/levels/%.bin: levelgen/levels/%.txt
 	@echo Converting $<
@@ -20,14 +25,20 @@ $(BUILD)/levels/%.bin: levelgen/levels/%.txt
 	@python3 levelgen/levelconvert.py $< $@
 
 # Convert tilemaps
-$(BUILD)/assets/%.2bpp $(BUILD)/assets/%.tilemap: tilemaps/%.png
+$(BUILD)/assets/%.gbcompress $(BUILD)/assets/%.tilemap: tilemaps/%.png
 	@echo Converting $<
 	@mkdir -p $(dir $@)
 	$(Q)rgbgfx $< -u -o $(BUILD)/assets/$*.2bpp -t $(BUILD)/assets/$*.tilemap
+	@./tools/gbcompress/gbcompress $(BUILD)/assets/$*.2bpp $@
 
-# Convert PB16 compressed assets
-$(BUILD)/assets/%.pb16: assets/%.pb16.png
+# Convert compressed assets
+$(BUILD)/assets/%.gbcompress: assets/%.c.png tools/gbcompress/gbcompress
 	@echo Converting $<
 	@mkdir -p $(dir $@)
 	$(Q)rgbgfx $< -o $(BUILD)/assets/$*.2bpp
-	@python3 tools/pb16.py $(BUILD)/assets/$*.2bpp $@
+	@./tools/gbcompress/gbcompress $(BUILD)/assets/$*.2bpp $@
+
+# Add this new clean as a prerequisite for the GBSDK clean.
+clean: clean2
+clean2:
+	@$(MAKE) -C tools/gbcompress clean

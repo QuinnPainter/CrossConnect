@@ -6,3 +6,5 @@ _build
 *.gb.bmp
 *.gbc.bmp
 *.sav
+*.o
+tools/gbcompress/gbcompress
