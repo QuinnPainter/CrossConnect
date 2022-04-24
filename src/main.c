@@ -181,11 +181,15 @@ void main()
     // these "spriteTiles_end - spriteTiles" subtractions happen at runtime instead of compile time
     // because those assets are in ASM, so the compiler doesn't know the addresses and can't optimise
     // not sure how to fix this outside of building a whole new asset inclusion system
-    memcpy((void*)0x8000, spriteTiles, spriteTiles_end - spriteTiles);
-    memcpy((void*)0x8800, backgroundTiles, backgroundTiles_end - backgroundTiles);
+    loadAllTiles();
+    //memcpy((void*)0x8000, spriteTiles, spriteTiles_end - spriteTiles);
+    //memcpy((void*)0x8800, backgroundTiles, backgroundTiles_end - backgroundTiles);
     memcpy((void*)0x8890, ingameMenuTiles, ingameMenuTiles_end - ingameMenuTiles);
     memcpy((void*)0x8900, connectionTiles, connectionTiles_end - connectionTiles);
     memcpy((void*)0x8B00, nodeShapeTiles, nodeShapeTiles_end - nodeShapeTiles); // unconnected
+
+    memcpy((void*)0x9100, mainMenuTiles, mainMenuTiles_end - mainMenuTiles);
+    memcpy((void*)0x9200, fontTiles, fontTiles_end - fontTiles);
 
     // Setup VRAM for CGB
     if (cpu_type == CPU_CGB)
@@ -196,7 +200,7 @@ void main()
         memcpy((void*)0x8A00, nodeNumberTilesCGB, nodeNumberTilesCGB_end - nodeNumberTilesCGB);
 
         // Copy in the tiles for the alternate colour connections
-        memcpy((void*)0x9000, connectionTiles, connectionTiles_end - connectionTiles);
+        memcpy((void*)0x9000, (void*)0x8900, connectionTiles_end - connectionTiles);
 
         // Convert the colours for the alternate colour connections
         for (uint8_t* i = (uint8_t*)0x9000; i < (uint8_t*)(0x9000 + (connectionTiles_end - connectionTiles)); i += 2)
@@ -247,8 +251,6 @@ void main()
         // Generate the "connected" tiles for nodeShapes
         genConnectedNodeTiles((uint8_t*)0x8C00, (uint8_t*)0x8D00, false);
     }
-    memcpy((void*)0x9100, mainMenuTiles, mainMenuTiles_end - mainMenuTiles);
-    memcpy((void*)0x9200, fontTiles, fontTiles_end - fontTiles);
 
     // Setup the OAM for sprite drawing
     oam_init();

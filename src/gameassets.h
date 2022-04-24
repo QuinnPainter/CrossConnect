@@ -50,4 +50,6 @@ EXTERN_ASSET(testLevels2);
 #define TILE_RIGHTARROW 0x47
 #define TILE_BLANK 0x97
 
+void loadAllTiles();
+
 #endif//GAMEASSETS_H

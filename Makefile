@@ -24,3 +24,10 @@ $(BUILD)/assets/%.2bpp $(BUILD)/assets/%.tilemap: tilemaps/%.png
 	@echo Converting $<
 	@mkdir -p $(dir $@)
 	$(Q)rgbgfx $< -u -o $(BUILD)/assets/$*.2bpp -t $(BUILD)/assets/$*.tilemap
+
+# Convert PB16 compressed assets
+$(BUILD)/assets/%.pb16: assets/%.pb16.png
+	@echo Converting $<
+	@mkdir -p $(dir $@)
+	$(Q)rgbgfx $< -o $(BUILD)/assets/$*.2bpp
+	@python3 tools/pb16.py $(BUILD)/assets/$*.2bpp $@
