@@ -11,6 +11,7 @@
 #include "bcd.h"
 #include "cursor.h"
 #include "game.h"
+#include "savegame.h"
 
 #define WINDOW_SHOWN_Y 104
 #define WINDOW_HIDDEN_Y 146 // it's offscreen at 144, just looks more natural if it's a bit over

@@ -5,6 +5,8 @@ DB "CROSSSAV1"
 
 SECTION "SavedVariablesMirror", WRAM0
 _nodeStyle:: DB
+_lvlSelectPage:: DB ; Current page within the pack, goes from 0 to 2 (3 pages of 30 levels)
+_lvlSelectPack:: DB ; Index of the current level pack (todo: save these)
 
 SECTION "SRAMSave", SRAM
 SaveVerifyStringSRAM: DS SIZEOF("SaveVerifyString")

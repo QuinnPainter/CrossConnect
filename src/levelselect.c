@@ -10,6 +10,7 @@
 #include "game.h"
 #include "gameassets.h"
 #include "levelmngr.h"
+#include "savegame.h"
 
 #define CURSOR_X_OFFSET ((8 * 2) + OAM_X_OFS)
 #define CURSOR_Y_OFFSET ((8 * 5) + OAM_Y_OFS)
@@ -17,8 +18,6 @@
 #define LEFTARROW_POS 0x9941
 #define LVLPACKNAME_POS 0x9843
 
-uint8_t lvlSelectPage = 0; // Current page within the pack, goes from 0 to 2 (3 pages of 30 levels)
-uint8_t lvlSelectPack = 0; // Index of the current level pack (todo: save these)
 uint8_t lvlSelected;
 
 inline bool atLeftmostPage()
@@ -72,6 +71,7 @@ void levelSelectLoop()
         {
             curLevelPackAddr = lvlDescArr[lvlSelectPack * 2];
             lvlSelected = ((cursorBoardY - 1) * 5) + (cursorBoardX - 1) + (lvlSelectPage * 30);
+            saveGame();
             runGame();
             return;
         }

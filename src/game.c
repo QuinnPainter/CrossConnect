@@ -438,6 +438,7 @@ OPEN_MENU:
                         lvlSelectPack++;
                         curLevelPackAddr = lvlDescArr[lvlSelectPack * 2];
                     }
+                    saveGame();
                     startGame();
                     break;
                 case INGAMEMENU_RESULT_MENU: return;

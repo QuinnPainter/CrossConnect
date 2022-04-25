@@ -5,6 +5,7 @@
         "hardware.h": "c",
         "oam.h": "c",
         "game.h": "c",
-        "interrupt.h": "c"
+        "interrupt.h": "c",
+        "text.h": "c"
     }
 }
