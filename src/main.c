@@ -190,6 +190,21 @@ void main()
     gb_decompress(mainMenuTiles, (uint8_t*)0x9100);
     gb_decompress(fontTiles, (uint8_t*)0x9200);
 
+    // Setup alt colour number tiles
+    {
+        // sdcc gives a weird "failed to parse line node" message here
+        // but only when the size is "16 * 10"
+        // because it does some wacky optimisation where it sets flags with "xor a and a"
+        // and does "push af" to put 160 on the stack.
+        // seems to be harmless, but who knows if it'll stay that way
+        // honestly, who wrote that pile of crap...
+        memcpy((void*)0x9500, (void*)0x93A0, 16 * 10);
+        for (uint8_t* i = (uint8_t*)0x9500; i < (uint8_t*)(0x9500 + 16 * 10); i++)
+        {
+            *i = ~(*i); // invert colour
+        }
+    }
+
     // Setup VRAM for CGB
     if (cpu_type == CPU_CGB)
     {

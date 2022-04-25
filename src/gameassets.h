@@ -26,9 +26,6 @@ extern const uint8_t* const lvlDescArr[];
 // but then this computation happens at runtime so it's inefficient
 #define NUM_LEVEL_PACKS 2
 
-EXTERN_ASSET(testLevels);
-EXTERN_ASSET(testLevels2);
-
 #define TILE_CURSOR 0x00
 #define TILE_MENUCURSOR 0x01
 #define TILE_CONNECT1 0x90

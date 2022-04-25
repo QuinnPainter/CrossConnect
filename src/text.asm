@@ -41,6 +41,7 @@ CHARMAP "!", "9" + 1
 CHARMAP ".", "!" + 1
 CHARMAP " ", $97 ; Empty space
 CHARMAP "^", $90 ; Grid square
+CHARMAP "[0]", $50 ; Alternate numbers
 
 
 SECTION "CopyStringVRAM", ROM0
@@ -112,6 +113,33 @@ _drawBCD8:: ; input num is A, dst is DE
 .skipFirstDigit:
     and $0F
     add "0"
+    ld e, a
+:   ldh a, [rSTAT]
+    and a, STATF_BUSY
+    jr nz, :-
+    ld [hl], e
+    ret
+
+; todo: could optimise by making the tile offset an input instead of having 2 functions
+_drawBCD8Alt:: ; input num is A, dst is DE
+    ld h, d
+    ld l, e
+    cp a, $10
+    jr c, .skipFirstDigit
+    ld d, a
+    swap a
+    and $0F
+    add "[0]"
+    ld e, a
+:   ldh a, [rSTAT]
+    and a, STATF_BUSY
+    jr nz, :-
+    ld a, e
+    ld [hli], a
+    ld a, d 
+.skipFirstDigit:
+    and $0F
+    add "[0]"
     ld e, a
 :   ldh a, [rSTAT]
     and a, STATF_BUSY

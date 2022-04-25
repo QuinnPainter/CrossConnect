@@ -66,10 +66,10 @@ DW _testLevels2
 DW _Testlevels2Name
 _lvlDescArr_end::
 
-;ASSET(backgroundTiles, "background.2bpp");
-;ASSET(cursorTiles, "cursor.2bpp");
-;ASSET(nodeNumberTiles, "nodeNumbers.2bpp");
-;ASSET(nodeNumberTilesCGB, "nodeNumbersCGB.2bpp");
-;ASSET(nodeShapeTiles, "nodeShapes.2bpp");
-;ASSET(connectionTiles, "connections.2bpp");
-;LEVELPACK(testLevels, "testlevels.bin");
+; would like to simplify this, but...
+; to add new levels:
+; 1. add levelpack bin to SECTION "Levels" above
+; 2. add name string to text.asm
+; 3. create entry in LevelDescriptionArray above
+; 4. increase NUM_LEVEL_PACKS in gameassets.h
+; 5. increase NUM_LVL_PACKS in savegame.asm

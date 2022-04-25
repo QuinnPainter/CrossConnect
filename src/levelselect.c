@@ -34,14 +34,23 @@ void drawLevelSelect()
 {
     clearScreenWithBorder();
 
-    bcd8 levelNum = lvlSelectPage * 0x30;
+    bcd8 levelNumBCD = lvlSelectPage * 0x30;
+    uint8_t levelNum = lvlSelectPage * 30;
     uint8_t* curTilemapAddr = (uint8_t*)0x98A3;
     for (uint8_t y = 6; y > 0; y--)
     {
         for (uint8_t x = 5; x > 0; x--)
         {
-            levelNum = bcd_inc(levelNum);
-            drawBCD8(levelNum, curTilemapAddr);
+            levelNumBCD = bcd_inc(levelNumBCD);
+            if (getLevelSolved(lvlSelectPack, levelNum))
+            {
+                drawBCD8Alt(levelNumBCD, curTilemapAddr);
+            }
+            else
+            {
+                drawBCD8(levelNumBCD, curTilemapAddr);
+            }
+            levelNum++;
             curTilemapAddr += 3;
         }
         // 17 = proceed to next line, 32 = go down another line
@@ -131,4 +140,17 @@ void lvlSelectProcessMove()
 
     cursorTargetY = ((cursorBoardY - 1) * (8 * 2)) + CURSOR_Y_OFFSET;
     cursorTargetX = ((cursorBoardX - 1) * (8 * 3)) + CURSOR_X_OFFSET;
+}
+
+bool getLevelSolved(uint8_t levelPack, uint8_t levelNum)
+{
+    uint8_t solvedLvlByte = solvedLevels[(levelPack * LVL_PACK_SAVE_SIZE) + (levelNum / 8)];
+    return (solvedLvlByte >> (levelNum & 0x7)) & 0x1;
+}
+
+void setLevelSolved(uint8_t levelPack, uint8_t levelNum)
+{
+    uint8_t* lvlBytePtr = solvedLevels + (levelPack * LVL_PACK_SAVE_SIZE) + (levelNum / 8);
+    *lvlBytePtr |= 1 << (levelNum & 0x7);
+    saveGame();
 }

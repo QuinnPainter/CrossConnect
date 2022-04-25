@@ -1,5 +1,10 @@
 INCLUDE "sdk/hardware.inc"
 
+DEF NUM_LVL_PACKS EQU 2
+; 90 levels per pack / 8 levels per byte. >> 16 to convert from fixed point to int.
+; Defined for C in levelselect.h
+DEF LVL_PACK_SAVE_SIZE EQU (CEIL(90.0 / 8) >> 16)
+
 SECTION "SaveVerifyString", ROM0
 DB "CROSSSAV1"
 
@@ -7,6 +12,7 @@ SECTION "SavedVariablesMirror", WRAM0
 _nodeStyle:: DB
 _lvlSelectPage:: DB ; Current page within the pack, goes from 0 to 2 (3 pages of 30 levels)
 _lvlSelectPack:: DB ; Index of the current level pack (todo: save these)
+_solvedLevels:: DS LVL_PACK_SAVE_SIZE * NUM_LVL_PACKS
 
 SECTION "SRAMSave", SRAM
 SaveVerifyStringSRAM: DS SIZEOF("SaveVerifyString")

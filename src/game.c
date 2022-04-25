@@ -420,6 +420,7 @@ void runGame()
         }
         if (checkGameWon())
         {
+            setLevelSolved(lvlSelectPack, lvlSelected);
             isWinMenu = true;
 OPEN_MENU:
             switch(ingameMenuLoop())
