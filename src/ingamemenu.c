@@ -12,6 +12,7 @@
 #include "cursor.h"
 #include "game.h"
 #include "savegame.h"
+#include "fireworks.h"
 
 #define WINDOW_SHOWN_Y 104
 #define WINDOW_HIDDEN_Y 146 // it's offscreen at 144, just looks more natural if it's a bit over
@@ -50,7 +51,7 @@ void drawWinMenu()
 
 uint8_t ingameMenuLoop()
 {
-    if (isWinMenu) { drawWinMenu(); }
+    if (isWinMenu) { drawWinMenu(); startFireworks(); }
     else { drawPauseMenu(); }
 
     cursorState = CURSOR_STATE_INGAMEMENU;
@@ -87,6 +88,7 @@ uint8_t ingameMenuLoop()
                 case WINMENU_MENU: rWY = WINDOW_HIDDEN_Y; return INGAMEMENU_RESULT_MENU;
             }
         }
+        if (isWinMenu) { updateFireworks(); }
         HALT();
     }
 DONE_LOOP:
