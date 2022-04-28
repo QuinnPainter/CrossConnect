@@ -29,9 +29,11 @@ inline bool atRightmostPage()
 {
     return (lvlSelectPack == NUM_LEVEL_PACKS - 1) && (lvlSelectPage == 2);
 }
-
+#include "fireworks.h"
 void drawLevelSelect()
 {
+    startFireworks();
+    while (true) { updateFireworks(); HALT(); }
     clearScreenWithBorder();
 
     bcd8 levelNumBCD = lvlSelectPage * 0x30;
