@@ -4,7 +4,7 @@ _curLevelWidth:: ds 1
 _curLevelHeight:: ds 1
 
 SECTION "level_mngr_hram", HRAM
-_curNodeIndex: ds 1 ; temp value used to store the current node colour
+hCurNodeIndex: ds 1 ; temp value used to store the current node colour
 
 SECTION "level_mngr_functions", ROM0
 
@@ -30,7 +30,7 @@ _loadLevel:: ; level index is in A
 
     ; Now HL is at the beginning of the puzzle definition
     ld a, [hli] ; save num nodes
-    ldh [_curNodeIndex], a
+    ldh [hCurNodeIndex], a
 
     ld a, [hli] ; Save puzzle width and height
     ld b, a
@@ -87,15 +87,15 @@ _loadLevel:: ; level index is in A
     ld e, a
     ld d, 0
     add hl, de ; HL = board[y + 1][x + 1]
-    ldh a, [_curNodeIndex]
+    ldh a, [hCurNodeIndex]
     dec a ; take away 1 so it starts at 0
     srl a ; divide by 2 to get colour value
     swap a ; move colour value into top bits
     or $0F ; tile type = node
     ld [hl], a ; board[y + 1][x + 1] = node
     inc bc ; progress puzzle definition pointer
-    ldh a, [_curNodeIndex]
+    ldh a, [hCurNodeIndex]
     dec a
-    ldh [_curNodeIndex], a
+    ldh [hCurNodeIndex], a
     jr nz, .drawNodesLoop
     ret

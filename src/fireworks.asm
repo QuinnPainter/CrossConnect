@@ -17,11 +17,15 @@ DEF AIR_RESISTANCE EQU $0019 ; Amount the firework X velocity decreases by every
 DEF GRAVITY EQU $0023 ; Amount the firework Y velocity decreases by each frame. 8.8 fixed
 
 SECTION "FireworksRAM", WRAM0
-FireworkArray: DS FIREWORK_SIZE * NUM_FIREWORK_SPRITES
+wFireworkArray: DS FIREWORK_SIZE * NUM_FIREWORK_SPRITES
+
+SECTION "FireworksHRAM", HRAM
+hFireworkSpritePtr: DB
+
 
 SECTION "FireworksCode", ROM0
 _startFireworks::
-    ld hl, FireworkArray
+    ld hl, wFireworkArray
     ld a, $50
     ld [hli], a
     ld [hli], a ; xpos
@@ -44,7 +48,7 @@ _startFireworks::
     ret
 
 _updateFireworks::
-    ld hl, FireworkArray
+    ld hl, wFireworkArray
 .mainlp:
     ; Update X position
     push hl
