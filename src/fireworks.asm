@@ -4,10 +4,10 @@ INCLUDE "sdk/hardware.inc"
 ; https://codepen.io/MillerTime/pen/XgpNwb
 
 RSRESET
-DEF FIREWORK_XPOS RB 2 ; 8.8 fixed point
-DEF FIREWORK_XVEL RB 2 ; int part is first byte, fraction part second byte
-DEF FIREWORK_YPOS RB 2
-DEF FIREWORK_YVEL RB 2
+DEF FIREWORK_YPOS RB 2 ; 8.8 fixed point
+DEF FIREWORK_YVEL RB 2 ; int part is first byte, fraction part second byte
+DEF FIREWORK_XPOS RB 2
+DEF FIREWORK_XVEL RB 2
 DEF FIREWORK_SIZE RB 0
 
 DEF FIREWORK_TILEINDEX EQU $02
@@ -28,17 +28,17 @@ _startFireworks::
     ld hl, wFireworkArray
     ld a, $50
     ld [hli], a
-    ld [hli], a ; xpos
-    ld a, $04
-    ld [hli], a
-    ld [hli], a ; xvel
-
-    ld a, $50
-    ld [hli], a
     ld [hli], a ; ypos
     ld a, $04
     ld [hli], a
     ld [hli], a ; yvel
+
+    ld a, $50
+    ld [hli], a
+    ld [hli], a ; xpos
+    ld a, $04
+    ld [hli], a
+    ld [hli], a ; xvel
 
     ld a, FIREWORK_TILEINDEX
     ld [wShadowOAM + (FIREWORK_FIRST_SPRITE * sizeof_OAM_ATTRS) + OAMA_TILEID], a
@@ -49,7 +49,47 @@ _startFireworks::
 
 _updateFireworks::
     ld hl, wFireworkArray
+    ld a, FIREWORK_FIRST_SPRITE * sizeof_OAM_ATTRS
+    ldh [hFireworkSpritePtr], a
 .mainlp:
+    ; Update Y Position
+    push hl
+     ld a, [hli] ; BC = FIREWORK_YPOS
+     ld b, a
+     ld a, [hli]
+     ld c, a
+     ld a, [hli] ; DE = FIREWORK_YVEL
+     ld d, a
+     ld a, [hli]
+     ld e, a
+
+     add c ; BC = FIREWORK_YPOS + FIREWORK_YVEL
+     ld c, a
+     ld a, d
+     adc b
+     ld b, a
+
+    pop hl ; reset HL back to FIREWORK_YPOS
+    ld a, b ; save new FIREWORK_YPOS
+    ld [hli], a
+    ld a, c
+    ld [hli], a
+
+    ld a, b
+    ld [wShadowOAM + (FIREWORK_FIRST_SPRITE * sizeof_OAM_ATTRS) + OAMA_Y], a
+
+    ; Apply gravity to Y Position
+    push hl
+     ld hl, GRAVITY
+     add hl, de
+     ld d, h
+     ld e, l
+    pop hl
+    ld a, d
+    ld [hli], a
+    ld a, e
+    ld [hli], a
+
     ; Update X position
     push hl
      ld a, [hli] ; BC = FIREWORK_XPOS
@@ -93,44 +133,6 @@ _updateFireworks::
      ld hl, -AIR_RESISTANCE
 :    add hl, de
 .setXvel:
-     ld d, h
-     ld e, l
-    pop hl
-    ld a, d
-    ld [hli], a
-    ld a, e
-    ld [hli], a
-
-    ; Update Y Position
-    push hl
-     ld a, [hli] ; BC = FIREWORK_YPOS
-     ld b, a
-     ld a, [hli]
-     ld c, a
-     ld a, [hli] ; DE = FIREWORK_YVEL
-     ld d, a
-     ld a, [hli]
-     ld e, a
-
-     add c ; BC = FIREWORK_YPOS + FIREWORK_YVEL
-     ld c, a
-     ld a, d
-     adc b
-     ld b, a
-
-    pop hl ; reset HL back to FIREWORK_YPOS
-    ld a, b ; save new FIREWORK_YPOS
-    ld [hli], a
-    ld a, c
-    ld [hli], a
-
-    ld a, b
-    ld [wShadowOAM + (FIREWORK_FIRST_SPRITE * sizeof_OAM_ATTRS) + OAMA_Y], a
-
-    ; Apply gravity to Y Position
-    push hl
-     ld hl, GRAVITY
-     add hl, de
      ld d, h
      ld e, l
     pop hl
