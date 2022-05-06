@@ -1,5 +1,19 @@
 {
-    "C_Cpp.intelliSenseEngine": "Tag Parser",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/src/**",
+        "${workspaceFolder}/gbsdk/inc/**"
+    ],
+    "C_Cpp.default.defines": [
+        "DMG",
+        "CGB",
+        "__sfr=", // hack that defines SDCC's defines to nothing, to fix intellisense.
+        "__at(HACK)=",
+        "__preserves_regs(...)=",
+        "__naked=",
+        "__critical=",
+        "__interrupt(HACK)="
+    ],
+    //"C_Cpp.intelliSenseEngine": "Tag Parser", // uncomment this to pretty much disable intellisense
     "files.associations": {
         "system.h": "c",
         "hardware.h": "c",
