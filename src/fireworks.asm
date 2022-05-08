@@ -16,7 +16,7 @@ DEF FIREWORK_FADETIME EQU 6 ; Number of frames between each fade state
 DEF FIREWORK_NUM_FADE_TILES EQU 4 ; Number of animation frames in the fadeout
 DEF FIREWORK_TILEINDEX EQU $02
 DEF FIREWORK_FIRST_SPRITE EQU 1 ; Sprite index of the first firework sprite
-DEF NUM_FIREWORK_SPRITES EQU 19
+DEF NUM_FIREWORK_SPRITES EQU 30
 DEF AIR_RESISTANCE EQU $0002 ; Amount the firework X velocity decreases by every frame. 8.8 fixed
 DEF GRAVITY EQU $0014 ; Amount the firework Y velocity decreases by each frame. 8.8 fixed
 
@@ -25,25 +25,37 @@ wFireworkArray: DS FIREWORK_SIZE * NUM_FIREWORK_SPRITES
 wFireworkState: DS 1 ; 0 = Idle, 1 = Shooting up, 2 = Exploding, 3 = Fading out
 wFireworkTimer: DS 1 ; Holds frame counts for various states
 wFireworkCurTile: DS 1 ; Current sprite tile, used for fading.
+wFireworkCurPalette: DS 1 ; Cycles through 4 palettes. Only on CGB
 
 SECTION "FireworksHRAM", HRAM
 hFireworkSpritePtr: DB
 
 SECTION "FireworkVelocityTable", ROM0
 ; angles are measured 0 - 65536.0 in rgbasm
-DEF YVEL_MULTIPLIER EQU 120000
-DEF XVEL_MULTIPLIER EQU 120000
-DEF NUM_DIRECTIONS EQU 19
+DEF VEL_MULTIPLIER1 EQU 120000
+DEF VEL_MULTIPLIER2 EQU 70000
+DEF NUM_DIRECTIONS EQU 30
 ANGLE = 0.0
-REPT NUM_DIRECTIONS
-YVEL = MUL(SIN(ANGLE), YVEL_MULTIPLIER) ; 16.16 fixed point number
+REPT NUM_DIRECTIONS / 2
+YVEL = MUL(SIN(ANGLE), VEL_MULTIPLIER1) ; 16.16 fixed point number
     db (YVEL >> 16) & $FF ; save integer part
     db (YVEL >> 8) & $FF ; save fractional part
-XVEL = MUL(COS(ANGLE), XVEL_MULTIPLIER) ; 16.16 fixed point number
+XVEL = MUL(COS(ANGLE), VEL_MULTIPLIER1) ; 16.16 fixed point number
     db (XVEL >> 16) & $FF ; save integer part
     db (XVEL >> 8) & $FF ; save fractional part
-ANGLE = ANGLE + ((65536 / NUM_DIRECTIONS) << 16) ; left shift to convert to fixed point
+ANGLE = ANGLE + ((65536 / (NUM_DIRECTIONS / 2)) << 16) ; left shift to convert to fixed point
 ENDR
+ANGLE = 0.0
+REPT NUM_DIRECTIONS / 2
+YVEL = MUL(SIN(ANGLE), VEL_MULTIPLIER2) ; 16.16 fixed point number
+    db (YVEL >> 16) & $FF ; save integer part
+    db (YVEL >> 8) & $FF ; save fractional part
+XVEL = MUL(COS(ANGLE), VEL_MULTIPLIER2) ; 16.16 fixed point number
+    db (XVEL >> 16) & $FF ; save integer part
+    db (XVEL >> 8) & $FF ; save fractional part
+ANGLE = ANGLE + ((65536 / (NUM_DIRECTIONS / 2)) << 16) ; left shift to convert to fixed point
+ENDR
+
 
 SECTION "FireworksCode", ROM0
 _startFireworks::
@@ -95,11 +107,17 @@ _updateFireworks::
     dec [hl]
     ret nz
     ; setup shooting up state
+    ld a, [wFireworkCurPalette]
+    inc a
+    and %11
+    or %100
+    ld [wFireworkCurPalette], a ; go to next palette
     ld hl, wShadowOAM + (FIREWORK_FIRST_SPRITE * sizeof_OAM_ATTRS)
     ld a, FIREWORK_STARTY   ; starting Y pos
     ld [hli], a             ; set sprite Y
     push hl
      call genRandom         ; generate random X position
+     ld a, h
     pop hl
     and $7F                 ; 0 - 127
     add OAM_X_OFS + 15      ; 15 - 142 (+ OAM_X_OFS)
@@ -107,7 +125,8 @@ _updateFireworks::
     ld c, a                 ; save X for later
     ld a, FIREWORK_TILEINDEX
     ld [hli], a             ; set sprite tile
-    ld a, OAMF_PAL1 | %111  ; use OBJ PAL 1 on DMG, PAL 7 on CGB
+    ld a, [wFireworkCurPalette] ;
+    or OAMF_PAL1                ; use OBJ PAL 1 on DMG, FireworkCurPalette on CGB
     ld [hli], a             ; set sprite attributes
     ld hl, wFireworkArray       ; use first array entry to store Y data for initial particle
     ld a, FIREWORK_STARTY
@@ -161,7 +180,8 @@ _updateFireworks::
 .setupSpritesLp:
     ld a, FIREWORK_TILEINDEX
     ld [hli], a
-    ld a, OAMF_PAL1 | %111 ; use OBJ PAL 1 on DMG, PAL 7 on CGB
+    ld a, [wFireworkCurPalette] ;
+    or OAMF_PAL1                ; use OBJ PAL 1 on DMG, FireworkCurPalette on CGB
     ld [hli], a ; sprite attributes
     inc hl
     inc hl
