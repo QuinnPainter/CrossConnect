@@ -20,6 +20,7 @@
         "oam.h": "c",
         "game.h": "c",
         "interrupt.h": "c",
-        "text.h": "c"
+        "text.h": "c",
+        "cursor.h": "c"
     }
 }

@@ -13,6 +13,7 @@
 #include "levelselect.h"
 #include "gbdecompress.h"
 #include "savegame.h"
+#include "random.h"
 
 #define BGCOLOUR PAL24(0xFFFFFF)
 #define GRIDCOLOUR PAL24(0x999999)
@@ -296,6 +297,8 @@ void main()
 
     // Init joypad state
     joypad_state = 0;
+
+    randState = 0x1337; // todo: proper seeding?
 
     while(1)
     {
