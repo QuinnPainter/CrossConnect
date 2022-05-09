@@ -13,6 +13,7 @@ DEF FIREWORK_SIZE RB 0
 DEF FIREWORK_STARTY EQU 150 + OAM_Y_OFS ; Y position it starts at before shooting up
 DEF FIREWORK_ALIVETIME EQU 17 ; Number of frames after exploding before firework fades out
 DEF FIREWORK_FADETIME EQU 6 ; Number of frames between each fade state
+DEF FIREWORK_START_YVEL EQU -$0440 ; Starting Y velocity of the first particle that shoots up. 8.8 fixed point
 DEF FIREWORK_NUM_FADE_TILES EQU 4 ; Number of animation frames in the fadeout
 DEF FIREWORK_TILEINDEX EQU $02
 DEF FIREWORK_FIRST_SPRITE EQU 1 ; Sprite index of the first firework sprite
@@ -60,6 +61,7 @@ ENDR
 SECTION "FireworksCode", ROM0
 _startFireworks::
     xor a
+    ld [wFireworkCurPalette], a ; initialise the palette
     ld [wFireworkState], a ; go to idle state
     inc a
     ld [wFireworkTimer], a ; fire immediately
@@ -132,10 +134,10 @@ _updateFireworks::
     ld a, FIREWORK_STARTY
     ld [hli], a                 ; set start Y
     ld [hli], a                 ; set subpixel the same as pixel, because why not
-    ld a, b                     ; bring back random value from earlier
-    ld a, -$05                  ; give initial velocity
+    ld a, HIGH(FIREWORK_START_YVEL)
     ld [hli], a                 ; set start Y velocity
-    ld [hli], a                 ; set velocity fraction, just to shut up BGB    
+    ld a, LOW(FIREWORK_START_YVEL)
+    ld [hli], a                 ; set velocity fraction
     ld a, c
     ld [hli], a                 ; set X
     ld a, 1
@@ -147,8 +149,9 @@ _updateFireworks::
     ld a, FIREWORK_FIRST_SPRITE * sizeof_OAM_ATTRS
     ldh [hFireworkSpritePtr], a
     call updateParticleY
-    bit 7, d
-    ret nz ; continue going if particle is still going up (has negative velocity)
+    ld a, d
+    cp $FF ; continue going if particle has velocity < -1
+    ret nz
     ; initialise exploding state
     ld hl, wFireworkArray
     ld bc, STARTOF("FireworkVelocityTable")
