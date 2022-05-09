@@ -67,6 +67,19 @@ _startFireworks::
     ld [wFireworkTimer], a ; fire immediately
     ret
 
+_clearFireworks::
+    ld e, NUM_FIREWORK_SPRITES
+    ld hl, wShadowOAM + (FIREWORK_FIRST_SPRITE * sizeof_OAM_ATTRS) + OAMA_Y
+    xor a
+.clearSprites: ; move all sprites offscreen
+    ld [hli], a
+    inc hl
+    inc hl
+    inc hl
+    dec e
+    jr nz, .clearSprites
+    ret
+
 _updateFireworks::
     ld a, [wFireworkState]
     and a

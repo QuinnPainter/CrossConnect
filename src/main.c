@@ -253,8 +253,8 @@ void main()
     else // DMG
     {
         rBGP = 0b11100100;
-        rOBP0 = 0b11100100;
-        rOBP1 = 0b11100100;
+        rOBP0 = 0b11100100; // cursor palette
+        rOBP1 = 0b10010000; // firework palette
 
         gb_decompress(nodeNumberTiles, (uint8_t*)0x8A00);
 

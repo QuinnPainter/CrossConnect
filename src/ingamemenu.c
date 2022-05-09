@@ -79,6 +79,7 @@ uint8_t ingameMenuLoop()
         }
         if (joypad_pressed & PAD_A)
         {
+            clearFireworks();
             switch (cursorBoardX)
             {
                 case PAUSEMENU_RESET: eraseAllConnections(); goto DONE_LOOP;
