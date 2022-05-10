@@ -35,11 +35,11 @@ uint8_t das_state = DAS_WAITING;
 uint8_t das_direction = 0;
 uint8_t das_timer = 0;
 
-void processMove()
+void processMove(uint8_t dpadState)
 {
     // https://barrgroup.com/embedded-systems/how-to/c-function-pointers
-    static void (*const processMoveTable[])() = {mainMenuProcessMove, lvlSelectProcessMove, ingameProcessMove, ingameMenuProcessMove};
-    processMoveTable[cursorState]();
+    static void (*const processMoveTable[])(uint8_t) = {mainMenuProcessMove, lvlSelectProcessMove, ingameProcessMove, ingameMenuProcessMove};
+    processMoveTable[cursorState](dpadState);
 }
 
 void processDpadPress(uint8_t dpadState)
@@ -49,14 +49,14 @@ void processDpadPress(uint8_t dpadState)
         cursorBoardPrevX = cursorBoardX; cursorBoardPrevY = cursorBoardY;
         if (dpadState & PAD_LEFT) {  cursorBoardX--; cursorMoveDirection = DIR_RIGHT; }
         else if (dpadState & PAD_RIGHT) { cursorBoardX++; cursorMoveDirection = DIR_LEFT; }
-        processMove();
+        processMove(dpadState & (PAD_LEFT | PAD_RIGHT));
     }
     if (dpadState & (PAD_UP | PAD_DOWN))
     {
         cursorBoardPrevX = cursorBoardX; cursorBoardPrevY = cursorBoardY;
         if (dpadState & PAD_UP) { cursorBoardY--; cursorMoveDirection = DIR_DOWN; }
         else if (dpadState & PAD_DOWN) { cursorBoardY++; cursorMoveDirection = DIR_UP; }
-        processMove();
+        processMove(dpadState & (PAD_UP | PAD_DOWN));
     }
 }
 

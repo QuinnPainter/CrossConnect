@@ -14,6 +14,6 @@ extern bool isWinMenu;
 void drawPauseMenu();
 void drawWinMenu();
 uint8_t ingameMenuLoop();
-void ingameMenuProcessMove();
+void ingameMenuProcessMove(uint8_t dpadState);
 
 #endif

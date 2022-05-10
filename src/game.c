@@ -451,7 +451,7 @@ OPEN_MENU:
     }
 }
 
-void ingameProcessMove()
+void ingameProcessMove(uint8_t dpadState)
 {
     if (board[cursorBoardY][cursorBoardX] == BOARD_TILE_FILLED)
     {

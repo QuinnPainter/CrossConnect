@@ -24,7 +24,7 @@ enum nodeStyles {
 
 void eraseAllConnections();
 void runGame();
-void ingameProcessMove();
+void ingameProcessMove(uint8_t dpadState);
 void ingameUpdateCursorPosition();
 
 #endif//GAME_H

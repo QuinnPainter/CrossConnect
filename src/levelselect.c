@@ -11,6 +11,8 @@
 #include "gameassets.h"
 #include "levelmngr.h"
 #include "savegame.h"
+#include "fxengine.h"
+#include "soundfx.h"
 
 #define CURSOR_X_OFFSET ((8 * 2) + OAM_X_OFS)
 #define CURSOR_Y_OFFSET ((8 * 5) + OAM_Y_OFS)
@@ -69,7 +71,7 @@ void levelSelectLoop()
 {
     drawLevelSelect();
     cursorBoardX = 1; cursorBoardY = 1; // todo - save this
-    lvlSelectProcessMove();
+    lvlSelectProcessMove(0);
     while(1)
     {
         joypad_update();
@@ -89,54 +91,62 @@ void levelSelectLoop()
     }
 }
 
-void lvlSelectProcessMove()
+void lvlSelectProcessMove(uint8_t dpadState)
 {
+    // todo: bug where if you hold a diagonal in a corner it will keep playing the sound
     if (cursorBoardY > 6 || cursorBoardY < 1)
     {
         cursorBoardY = cursorBoardPrevY;
     }
-    if (cursorBoardX > 5)
+    else if (dpadState & (PAD_UP | PAD_DOWN))
+    { playNewFX(FX_MenuBip); }
+    if (cursorBoardX > 5 || cursorBoardX < 1)
     {
-        if (atRightmostPage())
+        if (cursorBoardX > 5)
         {
-            // at the right end, so cancel cursor move
-            cursorBoardX = cursorBoardPrevX;
-        }
-        else
-        {
-            // switch pages right
-            lvlSelectPage++;
-            if (lvlSelectPage > 2)
+            if (atRightmostPage())
             {
-                lvlSelectPage = 0;
-                lvlSelectPack++;
+                // at the right end, so cancel cursor move
+                cursorBoardX = cursorBoardPrevX;
             }
-            drawLevelSelect();
-            cursorBoardX = 1;
-            lvlSelectProcessMove();
+            else
+            {
+                // switch pages right
+                lvlSelectPage++;
+                if (lvlSelectPage > 2)
+                {
+                    lvlSelectPage = 0;
+                    lvlSelectPack++;
+                }
+                drawLevelSelect();
+                cursorBoardX = 1;
+                playNewFX(FX_MenuBip);
+            }
+        }
+        else //if (cursorBoardX < 1)
+        {
+            if (atLeftmostPage())
+            {
+                // at the left end, so cancel cursor move
+                cursorBoardX = cursorBoardPrevX;
+            }
+            else
+            {
+                // switch pages left
+                lvlSelectPage--;
+                if ((int8_t)lvlSelectPage < 0)
+                {
+                    lvlSelectPage = 2;
+                    lvlSelectPack--;
+                }
+                drawLevelSelect();
+                cursorBoardX = 5;
+                playNewFX(FX_MenuBip);
+            }
         }
     }
-    if (cursorBoardX < 1)
-    {
-        if (atLeftmostPage())
-        {
-            // at the left end, so cancel cursor move
-            cursorBoardX = cursorBoardPrevX;
-        }
-        else
-        {
-            // switch pages left
-            lvlSelectPage--;
-            if ((int8_t)lvlSelectPage < 0)
-            {
-                lvlSelectPage = 2;
-                lvlSelectPack--;
-            }
-            drawLevelSelect();
-            cursorBoardX = 5;
-            lvlSelectProcessMove();
-        }
-    }
+    else if (dpadState & (PAD_LEFT | PAD_RIGHT))
+    { playNewFX(FX_MenuBip); }
 
     cursorTargetY = ((cursorBoardY - 1) * (8 * 2)) + CURSOR_Y_OFFSET;
     cursorTargetX = ((cursorBoardX - 1) * (8 * 3)) + CURSOR_X_OFFSET;

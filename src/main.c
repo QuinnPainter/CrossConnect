@@ -14,6 +14,8 @@
 #include "gbdecompress.h"
 #include "savegame.h"
 #include "random.h"
+#include "fxengine.h"
+#include "soundfx.h"
 
 #define BGCOLOUR PAL24(0xFFFFFF)
 #define GRIDCOLOUR PAL24(0x999999)
@@ -157,9 +159,10 @@ void drawMainMenu()
     drawStyleOption();
 }
 
-void mainMenuProcessMove()
+void mainMenuProcessMove(uint8_t dpadState)
 {
     if (cursorBoardY < 1 || cursorBoardY > 4) { cursorBoardY = cursorBoardPrevY; }
+    else if (dpadState & (PAD_UP | PAD_DOWN)) { playNewFX(FX_MenuBip); }
 
     cursorTargetY = MENUCURSOR_BASE_Y + ((cursorBoardY - 1) * 8);
     cursorTargetX = MENUCURSOR_X_POS;
@@ -174,7 +177,7 @@ void infoScreenLoop(uint8_t* screenString)
 
     while (!(joypad_pressed & PAD_B)) { joypad_update(); HALT(); }
     drawMainMenu();
-    mainMenuProcessMove(); // bring back cursor
+    mainMenuProcessMove(0); // bring back cursor
 }
 
 void main()
@@ -279,8 +282,10 @@ void main()
     cursorState = CURSOR_STATE_MAINMENU;
     cursorBoardY = MAINMENU_PLAY;
 
+    initFXEngine();
+
     // put cursor in right spot
-    mainMenuProcessMove();
+    mainMenuProcessMove(0);
 
     drawMainMenu();
 
@@ -314,7 +319,7 @@ void main()
                     drawMainMenu();
                     cursorState = CURSOR_STATE_MAINMENU;
                     cursorBoardY = MAINMENU_PLAY;
-                    mainMenuProcessMove(); // bring back cursor
+                    mainMenuProcessMove(0); // bring back cursor
                     break;
                 case MAINMENU_STYLE:
                     goto SWITCH_STYLE;
@@ -342,4 +347,5 @@ ISR_VBLANK()
 {
     oam_dma_copy();
     updateCursorAnimation();
+    updateFXEngine();
 }

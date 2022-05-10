@@ -6,7 +6,7 @@
 extern uint8_t lvlSelected;
 
 void levelSelectLoop();
-void lvlSelectProcessMove();
+void lvlSelectProcessMove(uint8_t dpadState);
 bool getLevelSolved(uint8_t levelPack, uint8_t levelNum);
 void setLevelSolved(uint8_t levelPack, uint8_t levelNum);
 

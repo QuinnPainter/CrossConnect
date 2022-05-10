@@ -13,6 +13,8 @@
 #include "game.h"
 #include "savegame.h"
 #include "fireworks.h"
+#include "fxengine.h"
+#include "soundfx.h"
 
 #define WINDOW_SHOWN_Y 104
 #define WINDOW_HIDDEN_Y 146 // it's offscreen at 144, just looks more natural if it's a bit over
@@ -59,7 +61,7 @@ uint8_t ingameMenuLoop()
     uint8_t prevCursorY = cursorBoardY;
     cursorTargetY = (uint8_t)MENU_CURSOR_Y;
     cursorBoardX = isWinMenu ? WINMENU_NEXT : PAUSEMENU_RESET;
-    ingameMenuProcessMove();
+    ingameMenuProcessMove(0);
 
     winYPos = (uint16_t)WINDOW_HIDDEN_Y << 8;
     while (rWY != WINDOW_SHOWN_Y)
@@ -106,7 +108,7 @@ DONE_LOOP:
     return INGAMEMENU_RESULT_DONOTHING;
 }
 
-void ingameMenuProcessMove()
+void ingameMenuProcessMove(uint8_t dpadState)
 {
     if (isWinMenu)
     {
@@ -115,6 +117,7 @@ void ingameMenuProcessMove()
             // using a goto here is more efficient than just putting another "cursorBoardX = cursorBoardPrevX";
             goto RESET_X;
         }
+        else if (dpadState & (PAD_LEFT | PAD_RIGHT)) { playNewFX(FX_MenuBip); }   
     }
     else
     {
@@ -123,6 +126,7 @@ void ingameMenuProcessMove()
 RESET_X:
             cursorBoardX = cursorBoardPrevX;
         }
+        else if (dpadState & (PAD_LEFT | PAD_RIGHT)) { playNewFX(FX_MenuBip); }
     }
     cursorTargetX = cursorXPositions[cursorBoardX - 1];
 }
