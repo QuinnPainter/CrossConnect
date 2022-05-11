@@ -93,7 +93,6 @@ void levelSelectLoop()
 
 void lvlSelectProcessMove(uint8_t dpadState)
 {
-    // todo: bug where if you hold a diagonal in a corner it will keep playing the sound
     if (cursorBoardY > 6 || cursorBoardY < 1)
     {
         cursorBoardY = cursorBoardPrevY;

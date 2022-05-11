@@ -272,12 +272,40 @@ FX_PlayerSpecialCharged:: ; (CH2) Played when the player's special bar is fully 
     DB SET_MUSIC_MUTE, MUTE_CH2 | MUSIC_UNMUTE, 0
     DB SOUND_END
 
+_FX_FireworkShoot:: ; (CH4) Played when a firework is launched
+    DB 0 ; Starting priority byte
+    DB PAN_CH4, AUDTERM_4_LEFT | AUDTERM_4_RIGHT, 0
+    CH4_VOLENV $4, AUDENV_DOWN, 1, 0
+    CH4_POLYCT AUD4POLY_15STEP, $5, $1, 0
+    CH4_RESTART AUDHIGH_LENGTH_OFF, AUDHIGH_RESTART, 0
+    DB SOUND_END
+
+_FX_FireworkExplode:: ; (CH4) Played when a firework explodes
+    DB 0 ; Starting priority byte
+    DB PAN_CH4, AUDTERM_4_LEFT | AUDTERM_4_RIGHT, 0
+    CH4_VOLENV $B, AUDENV_DOWN, 2, 0
+    CH4_POLYCT AUD4POLY_15STEP, $4, $6, 0
+    CH4_RESTART AUDHIGH_LENGTH_OFF, AUDHIGH_RESTART, 0
+    DB SOUND_END
+
 _FX_MenuBip:: ; (CH2) The small bip when moving between menu items
     DB 0 ; Starting priority byte
     DB PAN_CH2, AUDTERM_2_LEFT | AUDTERM_2_RIGHT, 0
     CH2_LENGTH_DUTY AUDLEN_DUTY_12_5, 0, 0
     CH2_VOLENV $3, AUDENV_DOWN, 2, 0
-    CH2_FREQ NOTE_A_3, AUDHIGH_LENGTH_OFF, AUDHIGH_RESTART, 5
+    CH2_FREQ NOTE_A_3, AUDHIGH_LENGTH_OFF, AUDHIGH_RESTART, 0
+    DB SOUND_END
+
+_FX_WinJingle:: ; (CH2) Sound that plays when you win a level
+    DB 1 ; Starting priority byte
+    DB PAN_CH2, AUDTERM_2_LEFT | AUDTERM_2_RIGHT, 0
+    CH2_LENGTH_DUTY AUDLEN_DUTY_50 , 0, 0
+    CH2_VOLENV $8, AUDENV_DOWN, 2, 0
+    CH2_FREQ NOTE_D_5, AUDHIGH_LENGTH_OFF, AUDHIGH_RESTART, 7
+    CH2_FREQ NOTE_C_5, AUDHIGH_LENGTH_OFF, AUDHIGH_RESTART, 7
+    CH2_FREQ NOTE_A_4, AUDHIGH_LENGTH_OFF, AUDHIGH_RESTART, 7 * 4
+    CH2_FREQ NOTE_Cs5, AUDHIGH_LENGTH_OFF, AUDHIGH_RESTART, 7 * 2
+    CH2_FREQ NOTE_D_5, AUDHIGH_LENGTH_OFF, AUDHIGH_RESTART, 0
     DB SOUND_END
 
 FX_CarSelect:: ; (CH2) When a car is selected in the garage

@@ -63,8 +63,8 @@ _startFireworks::
     xor a
     ld [wFireworkCurPalette], a ; initialise the palette
     ld [wFireworkState], a ; go to idle state
-    inc a
-    ld [wFireworkTimer], a ; fire immediately
+    ld a, 90 ; wait 1.5 seconds before firing
+    ld [wFireworkTimer], a
     ret
 
 _clearFireworks::
@@ -155,7 +155,8 @@ _updateFireworks::
     ld [hli], a                 ; set X
     ld a, 1
     ld [wFireworkState], a  ; move to shooting up state
-    ret
+    ld hl, _FX_FireworkShoot
+    jp PlayNewFX              ; tail call to play firework shoot sound
 
 .flyingState:
     ld hl, wFireworkArray
@@ -207,6 +208,8 @@ _updateFireworks::
     ld [wFireworkTimer], a
     ld a, 2
     ld [wFireworkState], a ; move to exploding state
+    ld hl, _FX_FireworkExplode
+    call PlayNewFX
     ; fall into explode state
     
 .explodingState:

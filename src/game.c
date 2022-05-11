@@ -13,6 +13,8 @@
 #include "ingamemenu.h"
 #include "levelselect.h"
 #include "savegame.h"
+#include "fxengine.h"
+#include "soundfx.h"
 
 #define BOARD_VRAM 0x99CD
 
@@ -420,6 +422,7 @@ void runGame()
         }
         if (checkGameWon())
         {
+            playNewFX(FX_WinJingle);
             setLevelSolved(lvlSelectPack, lvlSelected);
             isWinMenu = true;
 OPEN_MENU:
