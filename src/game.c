@@ -413,7 +413,12 @@ void runGame()
             eraseConnection(cursorBoardX, cursorBoardY+1, DIR_UP);
             eraseConnection(cursorBoardX, cursorBoardY-1, DIR_DOWN);
             // Erase the current tile
+            uint8_t beforeTile = board[cursorBoardY][cursorBoardX];
             eraseTileConnections(cursorBoardX, cursorBoardY);
+            if (beforeTile != board[cursorBoardY][cursorBoardX])
+            {
+                playNewFX(FX_Delete); // only play sound if a tile was actually erased
+            }
         }
         if (joypad_pressed & PAD_START)
         {
@@ -478,6 +483,7 @@ void ingameProcessMove(uint8_t dpadState)
                 paintConnection(cursorBoardX, cursorBoardY, cursorMoveDirection);
                 // paint previous tile
                 paintConnection(cursorBoardPrevX, cursorBoardPrevY, invertDirection(cursorMoveDirection));
+                playNewFX(FX_Draw);
             }
             else // if paint is not valid, don't move the cursor
             {   // todo : sound effect for this?
