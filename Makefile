@@ -10,7 +10,7 @@ include gbsdk/rules.mk
 # Game fits in 32k, so put everything in ROM0
 LDFLAGS += --tiny
 
-FIXFLAGS += --rom-version 0
+FIXFLAGS += --rom-version 1
 FIXFLAGS += --new-licensee HB
 
 tools/gbcompress/gbcompress:

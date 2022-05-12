@@ -12,7 +12,8 @@ Each puzzle is a square grid, containing several pairs of nodes sharing the same
 1. Every node is connected to its pair.  
 2. The entire board is filled with lines.
 
-You can move the cursor using the D-pad. To draw lines, move the cursor over a node or the end of a line, hold A, then move the cursor again. Use the B button to delete lines. If a line segment isn't connected to any node, it will be automatically deleted.
+You can move the cursor using the D-pad. To draw lines, move the cursor over a node or the end of a line, hold A, then move the cursor again.  
+Use the B button to delete lines. If a line segment isn't connected to any node, it will be automatically deleted.
 
 If a level has you totally stumped, or you're just a dirty little cheater, all level solutions can be found in the `levelgen/levels/` folder. Don't worry, I won't judge you. Probably.
 

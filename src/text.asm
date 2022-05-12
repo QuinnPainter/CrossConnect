@@ -164,7 +164,7 @@ _HowToString:: DB "HOW TO", 0
 
 SECTION "AboutPageString", ROM0
 _AboutPageString::
-DB "^CROSSCONNECT V0.1", 0
+DB "^CROSSCONNECT V1.0", 0
 DB "^BY QUINN PAINTER", 0
 DB "^       2022", 0
 DB 0
