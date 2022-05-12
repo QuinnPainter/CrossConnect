@@ -99,9 +99,11 @@ void lvlSelectProcessMove(uint8_t dpadState)
     }
     else if (dpadState & (PAD_UP | PAD_DOWN))
     { playNewFX(FX_MenuBip); }
-    if (cursorBoardX > 5 || cursorBoardX < 1)
+
+    bool fastMove = joypad_state & PAD_SELECT; // move by pages at a time if Select is held
+    if (cursorBoardX > 5 || cursorBoardX < 1 || fastMove)
     {
-        if (cursorBoardX > 5)
+        if (cursorBoardX > 5 || (fastMove && (dpadState & PAD_RIGHT)))
         {
             if (atRightmostPage())
             {
