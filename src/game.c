@@ -422,6 +422,7 @@ void runGame()
         }
         if (joypad_pressed & PAD_START)
         {
+            playNewFX(FX_Pause);
             isWinMenu = false;
             goto OPEN_MENU;
         }

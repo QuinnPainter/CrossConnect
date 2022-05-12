@@ -84,7 +84,7 @@ uint8_t ingameMenuLoop()
             clearFireworks();
             switch (cursorBoardX)
             {
-                case PAUSEMENU_RESET: eraseAllConnections(); goto DONE_LOOP;
+                case PAUSEMENU_RESET: eraseAllConnections(); playNewFX(FX_Reset); goto DONE_LOOP;
                 case PAUSEMENU_SKIP:
                 case WINMENU_NEXT: rWY = WINDOW_HIDDEN_Y; return INGAMEMENU_RESULT_NEXT;
                 case PAUSEMENU_MENU:
@@ -94,6 +94,7 @@ uint8_t ingameMenuLoop()
         if (isWinMenu) { updateFireworks(); }
         HALT();
     }
+    playNewFX(FX_Unpause);
 DONE_LOOP:
     cursorBoardX = prevCursorX;
     cursorBoardY = prevCursorY;
