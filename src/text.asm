@@ -210,5 +210,16 @@ SECTION "GameWinString", ROM0
 _GameWinString:: DB "SOLVED!", 0
 
 SECTION "LevelpackNameStrings", ROM0
-_TestlevelsName:: DB "TESTLEVELS", 0
-_Testlevels2Name:: DB "TESTLEVELS2", 0
+lvlPack1Name:: DB "NOVICE", 0
+lvlPack2Name:: DB "STUDENT", 0
+lvlPack3Name:: DB "APPRENTICE", 0
+lvlPack4Name:: DB "GRADUATE", 0
+lvlPack5Name:: DB "PROFESSOR", 0
+lvlPack6Name:: DB "EXPERT", 0
+lvlPack7Name:: DB "GURU", 0
+lvlPack8Name:: DB "MASTER", 0
+lvlPack9Name:: DB "GRANDMASTER", 0
+lvlPack10Name:: DB "WIZARD", 0
+lvlPackBonus1Name:: DB "BONUS EASY", 0
+lvlPackBonus2Name:: DB "BONUS MEDIUM", 0
+lvlPackBonus3Name:: DB "BONUS HARD", 0

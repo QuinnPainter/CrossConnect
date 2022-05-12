@@ -1,6 +1,6 @@
 INCLUDE "sdk/hardware.inc"
 
-DEF NUM_LVL_PACKS EQU 2
+DEF NUM_LVL_PACKS EQU 13
 ; 90 levels per pack / 8 levels per byte. >> 16 to convert from fixed point to int.
 ; Defined for C in levelselect.h
 DEF LVL_PACK_SAVE_SIZE EQU (CEIL(90.0 / 8) >> 16)

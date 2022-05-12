@@ -51,19 +51,61 @@ _ingameMenuTilemap::
 _ingameMenuTilemap_end::
 
 SECTION "Levels", ROM0
-_testLevels::
-    INCBIN "_build/levels/testlevels.bin"
-_testLevels_end::
-_testLevels2::
-    INCBIN "_build/levels/testlevels2.bin"
-_testLevels2_end::
+lvlPack1:
+    INCBIN "_build/levels/pack1.bin"
+lvlPack2:
+    INCBIN "_build/levels/pack2.bin"
+lvlPack3:
+    INCBIN "_build/levels/pack3.bin"
+lvlPack4:
+    INCBIN "_build/levels/pack4.bin"
+lvlPack5:
+    INCBIN "_build/levels/pack5.bin"
+lvlPack6:
+    INCBIN "_build/levels/pack6.bin"
+lvlPack7:
+    INCBIN "_build/levels/pack7.bin"
+lvlPack8:
+    INCBIN "_build/levels/pack8.bin"
+lvlPack9:
+    INCBIN "_build/levels/pack9.bin"
+lvlPack10:
+    INCBIN "_build/levels/pack10.bin"
+lvlPackBonus1:
+    INCBIN "_build/levels/bonus1.bin"
+lvlPackBonus2:
+    INCBIN "_build/levels/bonus2.bin"
+lvlPackBonus3:
+    INCBIN "_build/levels/bonus3.bin"
 
 SECTION "LevelDescriptionArray", ROM0
 _lvlDescArr::
-DW _testLevels
-DW _TestlevelsName
-DW _testLevels2
-DW _Testlevels2Name
+DW lvlPack1
+DW lvlPack1Name
+DW lvlPack2
+DW lvlPack2Name
+DW lvlPack3
+DW lvlPack3Name
+DW lvlPack4
+DW lvlPack4Name
+DW lvlPack5
+DW lvlPack5Name
+DW lvlPack6
+DW lvlPack6Name
+DW lvlPack7
+DW lvlPack7Name
+DW lvlPack8
+DW lvlPack8Name
+DW lvlPack9
+DW lvlPack9Name
+DW lvlPack10
+DW lvlPack10Name
+DW lvlPackBonus1
+DW lvlPackBonus1Name
+DW lvlPackBonus2
+DW lvlPackBonus2Name
+DW lvlPackBonus3
+DW lvlPackBonus3Name
 _lvlDescArr_end::
 
 ; would like to simplify this, but...

@@ -24,7 +24,7 @@ extern const uint8_t* const lvlDescArr[];
 // I could do something like this:
 //#define NUM_LEVEL_PACKS ((lvlDescArr_end - lvlDescArr) / 4)
 // but then this computation happens at runtime so it's inefficient
-#define NUM_LEVEL_PACKS 2
+#define NUM_LEVEL_PACKS 13
 
 #define TILE_CURSOR 0x00
 #define TILE_MENUCURSOR 0x01
