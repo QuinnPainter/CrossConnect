@@ -2,6 +2,7 @@
 ![](screenshots/title.png)  
 A puzzle game for the Game Boy based on the classic game "[Numberlink](https://en.wikipedia.org/wiki/Numberlink)".  
 Written in a mixture of C and ASM using [GBSDK](https://github.com/daid/gbsdk).  
+Play it online [here](https://hh.gbdev.io/game/crossconnect)!  
 Intended for the Game Boy Color, but is also playable on the regular Game Boy!  
 ![](screenshots/gamecgb.png)
 ![](screenshots/gamedmg.png)
